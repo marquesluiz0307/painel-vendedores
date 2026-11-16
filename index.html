@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel Executivo de Vendas — Acompanhamento Diário & Drill-Down</title>
+  <title>Painel Executivo de Metas — Drill-Down & Matriz Diária</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -26,22 +26,19 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Barra de rolagem personalizada para a Matriz */
+    /* Barra de rolagem estilizada para a Matriz */
     .matrix-scroll::-webkit-scrollbar {
       height: 10px;
       width: 10px;
     }
-
     .matrix-scroll::-webkit-scrollbar-track {
       background: #e2e8f0;
-      border-radius: 6px;
+      border-radius: 999px;
     }
-
     .matrix-scroll::-webkit-scrollbar-thumb {
       background: #94a3b8;
-      border-radius: 6px;
+      border-radius: 999px;
     }
-
     .matrix-scroll::-webkit-scrollbar-thumb:hover {
       background: #64748b;
     }
@@ -52,18 +49,16 @@
       left: 0;
       z-index: 15;
     }
-
     .sticky-col-2 {
       position: sticky;
-      left: 64px;
+      left: 68px;
       z-index: 15;
     }
-
     .sticky-col-3 {
       position: sticky;
-      left: 234px;
+      left: 248px;
       z-index: 15;
-      box-shadow: 4px 0 6px -2px rgba(15, 23, 42, 0.12);
+      box-shadow: 4px 0 8px -2px rgba(15, 23, 42, 0.14);
     }
 
     thead .sticky-col-1,
@@ -78,19 +73,17 @@
       z-index: 25;
     }
 
-    /* Cores estilo planilha Google Sheets com alta legibilidade */
+    /* Cores de status das células da Matriz */
     .cell-hit {
       background-color: #86efac;
       color: #052e16;
-      font-weight: 600;
+      font-weight: 700;
     }
-
     .cell-miss {
       background-color: #fca5a5;
       color: #450a0a;
       font-weight: 600;
     }
-
     .cell-future {
       background-color: #f8fafc;
       color: #94a3b8;
@@ -98,9 +91,8 @@
 
     @keyframes pulse-dot {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
+      50% { opacity: 0.45; transform: scale(0.88); }
     }
-
     .animate-pulse-dot {
       animation: pulse-dot 2s infinite ease-in-out;
     }
@@ -108,35 +100,45 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- ===================================================================== -->
-  <!-- CABEÇALHO EXECUTIVO                                                   -->
-  <!-- ===================================================================== -->
+  <!-- ======================================================================= -->
+  <!-- CABEÇALHO EXECUTIVO                                                     -->
+  <!-- ======================================================================= -->
   <header class="bg-slate-900 text-white border-b border-slate-800 shadow-lg">
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-4">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <!-- Título e Subtítulo -->
+      <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+        <!-- Identidade do Painel e Badge Regional -->
         <div>
-          <div class="flex items-center gap-2.5 flex-wrap">
-            <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-blue-600 text-white font-bold shadow">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-blue-600 text-white shadow">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
               </svg>
             </span>
             <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">
-              Painel Executivo de Vendas — Acompanhamento Diário &amp; Drill-Down
+              Painel Executivo de Metas — Vendedores &amp; Drill-Down
             </h1>
+            <span id="regionLockBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+              Visão Geral (Todas as Regiões)
+            </span>
           </div>
           <p id="headerSubtitle" class="text-xs sm:text-sm text-slate-400 mt-1">
-            Carregando dias úteis preenchidos até 30-nov...
+            Sincronizando calendário até 30-nov...
           </p>
         </div>
 
-        <!-- Status de Sincronização e Botões -->
+        <!-- Controles de Sincronização e Links Regionais -->
         <div class="flex flex-wrap items-center gap-2.5">
-          <div id="syncStatusBadge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs">
             <span id="syncDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse-dot"></span>
             <span id="syncStatusText" class="text-slate-200 font-medium">Conectando ao Google Sheets...</span>
           </div>
+
+          <button id="btnCopyLinks" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+            </svg>
+            <span>Links Regionais</span>
+          </button>
 
           <button id="btnSyncNow" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-semibold shadow transition cursor-pointer">
             <svg id="syncSpinner" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -145,139 +147,225 @@
             <span>Sincronizar Agora</span>
           </button>
 
-          <button id="btnOpenConfig" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer" title="Configurar URL CSV ou Colar Dados">
+          <button id="btnOpenConfig" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer" title="Configurar Planilha">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span>Fonte de Dados</span>
+            <span>Planilha</span>
           </button>
         </div>
       </div>
 
-      <!-- Barra de Navegação entre as 2 Abas Principais -->
-      <div class="mt-4 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
-        <div class="inline-flex p-1 rounded-xl bg-slate-800/90 border border-slate-700 gap-1">
-          <button id="tabBtnMatrix" type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-blue-600 text-white shadow">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125" />
-            </svg>
-            <span>Visão Geral Diária (Matriz 3 a 30-nov.)</span>
-          </button>
-
-          <button id="tabBtnDrilldown" type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60">
+      <!-- Barra de Navegação: Abas Principais + Seletor de Macro-Região (Visível no modo Gestor) -->
+      <div class="mt-4 pt-3 border-t border-slate-800 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <!-- Abas -->
+        <div class="inline-flex p-1 rounded-xl bg-slate-800/90 border border-slate-700 gap-1 self-start">
+          <button id="tabBtnDrilldown" type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-blue-600 text-white shadow">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 4.5h14.25M3 9h9.75M3 13.5h9.75m4.5-4.5v12m0 0l-3.75-3.75M17.25 21L21 17.25" />
             </svg>
             <span>Acompanhamento Drill-Down &amp; Meta</span>
           </button>
+
+          <button id="tabBtnMatrix" type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0112 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125" />
+            </svg>
+            <span>Visão Geral Diária (Matriz)</span>
+          </button>
         </div>
 
-        <div class="flex items-center gap-2 text-xs text-slate-300">
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700">
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-            Auto-Refresh a cada 60s
-          </span>
+        <!-- Seletor de Macro-Região (Ocultado automaticamente quando ?regiao=sul ou ?regiao=norte estiver ativo na URL) -->
+        <div id="regionSwitcherWrapper" class="flex flex-wrap items-center gap-1.5 bg-slate-800/90 p-1 rounded-xl border border-slate-700 self-start">
+          <button type="button" data-region-btn="ALL" class="region-btn px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer bg-slate-700 text-white">
+            Todas as Regiões
+          </button>
+          <button type="button" data-region-btn="SUL" class="region-btn px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-slate-300 hover:text-white">
+            Região Sul (LDA • CTB • JOI • POA)
+          </button>
+          <button type="button" data-region-btn="NORTE" class="region-btn px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-slate-300 hover:text-white">
+            Norte / Nordeste / Goiânia
+          </button>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- ===================================================================== -->
-  <!-- CONTEÚDO PRINCIPAL                                                    -->
-  <!-- ===================================================================== -->
+  <!-- ======================================================================= -->
+  <!-- CONTEÚDO PRINCIPAL                                                      -->
+  <!-- ======================================================================= -->
   <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
 
-    <!-- 4 CARDS DE KPIs CONSOLIDADOS NO TOPO -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <!-- KPI 1: Realizado no Período -->
+    <!-- 5 CARDS DE KPIs EXECUTIVOS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+      <!-- KPI 1: Meta do Período -->
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Realizado no Período</span>
-          <span class="p-2 rounded-xl bg-blue-50 text-blue-600">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Meta do Período</span>
+          <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+            </svg>
+          </span>
+        </div>
+        <p id="kpiMeta" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">R$ 0,00</p>
+        <p id="kpiMetaSub" class="text-[11px] text-slate-500 mt-1">Proporcional aos dias ativos</p>
+      </div>
+
+      <!-- KPI 2: Realizado -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Realizado</span>
+          <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </span>
         </div>
-        <p id="kpiRealizado" class="text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">R$ 0,00</p>
-        <p id="kpiRealizadoSub" class="text-xs text-slate-500 mt-1">Soma das vendas preenchidas</p>
-      </div>
-
-      <!-- KPI 2: Meta Proporcional -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Meta Proporcional (Dias Ativos)</span>
-          <span class="p-2 rounded-xl bg-indigo-50 text-indigo-600">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-            </svg>
-          </span>
-        </div>
-        <p id="kpiMeta" class="text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">R$ 0,00</p>
-        <p id="kpiMetaSub" class="text-xs text-slate-500 mt-1">Considerando apenas dias preenchidos</p>
+        <p id="kpiRealizado" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">R$ 0,00</p>
+        <p id="kpiRealizadoSub" class="text-[11px] text-slate-500 mt-1">Vendas contabilizadas</p>
       </div>
 
       <!-- KPI 3: % Atingimento Geral -->
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">% Atingimento Geral</span>
-          <span id="kpiPctBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">0,0%</span>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">% Atingimento</span>
+          <span id="kpiPctBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">0,0%</span>
         </div>
-        <p id="kpiPct" class="text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">0,00%</p>
+        <p id="kpiPct" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">0,00%</p>
         <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden mt-2">
           <div id="kpiPctBar" class="h-full bg-blue-600 rounded-full transition-all duration-300" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- KPI 4: Saldo Geral / Ficou Devendo -->
+      <!-- KPI 4: Total Ficou Devendo (Gap Negativo) -->
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Saldo Geral / Ficou Devendo</span>
-          <span id="kpiGapBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700">Gap</span>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Ficou Devendo (Gap)</span>
+          <span id="kpiGapBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">Faltante</span>
         </div>
-        <p id="kpiGap" class="text-2xl font-extrabold text-rose-600 mt-2 tabular-nums">R$ 0,00</p>
-        <p id="kpiGapSub" class="text-xs text-slate-500 mt-1">Diferença entre Realizado e Meta</p>
+        <p id="kpiGap" class="text-xl sm:text-2xl font-extrabold text-rose-600 mt-2 tabular-nums">R$ 0,00</p>
+        <p id="kpiGapSub" class="text-[11px] text-slate-500 mt-1">Soma do débito dos vendedores abaixo</p>
+      </div>
+
+      <!-- KPI 5: Vendedores na Meta -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Vendedores na Meta</span>
+          <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+        </div>
+        <p id="kpiOnTarget" class="text-xl sm:text-2xl font-extrabold text-emerald-600 mt-2 tabular-nums">0 / 0</p>
+        <p id="kpiOnTargetSub" class="text-[11px] text-slate-500 mt-1">Atingiram &ge; 100% no filtro</p>
       </div>
     </section>
 
-    <!-- =================================================================== -->
-    <!-- ABA 1: VISÃO GERAL DIÁRIA (MATRIZ ESTILO PLANILHA 3 A 30-NOV.)       -->
-    <!-- =================================================================== -->
-    <div id="viewMatrix" class="space-y-4">
-      <!-- Controles da Matriz -->
-      <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-3">
-          <!-- Filtro Filial -->
+    <!-- ===================================================================== -->
+    <!-- ABA 2 (ABERTA POR PADRÃO): ACOMPANHAMENTO DRILL-DOWN & META           -->
+    <!-- ===================================================================== -->
+    <div id="viewDrilldown" class="space-y-5">
+      <!-- Nível 1: Cards Clicáveis de Drill-Down por Filial / Praça -->
+      <section>
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Nível 1 — Drill-Down por Filial / Praça (Clique no card para filtrar a equipe)
+          </h2>
+          <button id="btnResetBranchFilter" type="button" class="text-xs font-bold text-blue-600 hover:text-blue-800 hidden cursor-pointer">
+            × Limpar filtro de filial
+          </button>
+        </div>
+        <div id="branchCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3.5"></div>
+      </section>
+
+      <!-- Filtros de Data de Referência, Situação e Busca -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-end justify-between gap-4">
+        <div class="flex flex-wrap items-end gap-3">
           <div>
-            <label for="matrixBranchFilter" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Filial</label>
-            <select id="matrixBranchFilter" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ALL">Todas as Filiais</option>
+            <label for="ddDateSelect" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data de Referência</label>
+            <select id="ddDateSelect" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ACCUMULATED">Acumulado (Dias Preenchidos)</option>
             </select>
           </div>
 
-          <!-- Busca por Vendedor -->
           <div>
-            <label for="matrixSearchInput" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Buscar Vendedor</label>
-            <input id="matrixSearchInput" type="text" placeholder="Ex.: ADEMAR, ALINE, PEDRO..." class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm text-slate-800 w-52 sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label for="ddStatusFilter" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Situação da Meta</label>
+            <select id="ddStatusFilter" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">Todos os Vendedores</option>
+              <option value="DEVENDO">Ficaram Devendo (&lt; 100%)</option>
+              <option value="BATIDA">Bateram a Meta (&ge; 100%)</option>
+            </select>
           </div>
 
-          <!-- Modo de Exibição nas Células -->
+          <div>
+            <label for="ddSearchInput" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Buscar Vendedor</label>
+            <input id="ddSearchInput" type="text" placeholder="Ex.: ADEMAR, POA, GYN..." class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm text-slate-800 w-56 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
+
+        <div id="ddSummaryPill" class="text-xs font-semibold text-slate-600 bg-slate-100 px-3.5 py-2 rounded-xl">
+          Carregando vendedores...
+        </div>
+      </section>
+
+      <!-- Nível 2: Tabela Ranking de Vendedores -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-xs sm:text-sm tabular-nums">
+            <thead class="bg-slate-900 text-white text-left">
+              <tr>
+                <th class="px-4 py-3 font-bold cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="branchDisplay">Filial / Praça ↕</th>
+                <th class="px-4 py-3 font-bold cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="name">Vendedor ↕</th>
+                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="dailyMeta">Meta Diária ↕</th>
+                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="metaEsperada">Meta do Período ↕</th>
+                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="realizado">Realizado ↕</th>
+                <th class="px-4 py-3 font-bold text-center cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="pct">% Atingimento ↕</th>
+                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="devendo">Ficou Devendo / Saldo ↕</th>
+                <th class="px-4 py-3 font-bold text-center whitespace-nowrap">Extrato</th>
+              </tr>
+            </thead>
+            <tbody id="ddRankingBody" class="divide-y divide-slate-200"></tbody>
+            <tfoot id="ddRankingFoot" class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300"></tfoot>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- ABA 1: VISÃO GERAL DIÁRIA (MATRIZ ESTILO PLANILHA)                    -->
+    <!-- ===================================================================== -->
+    <div id="viewMatrix" class="hidden space-y-4">
+      <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+          <div>
+            <label for="matrixBranchFilter" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Filial / Praça</label>
+            <select id="matrixBranchFilter" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="ALL">Todas as Filiais da Região</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="matrixSearchInput" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Buscar Vendedor</label>
+            <input id="matrixSearchInput" type="text" placeholder="Nome do vendedor..." class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm text-slate-800 w-52 sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
           <div>
             <label for="matrixDisplayMode" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Exibir nas Células Diárias</label>
             <select id="matrixDisplayMode" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="value">Valor Realizado (R$)</option>
-              <option value="pct">% da Meta Diária</option>
-              <option value="gap">Saldo / Ficou Devendo (R$)</option>
+              <option value="value">Valor (R$)</option>
+              <option value="pct">% da Meta</option>
+              <option value="gap">Saldo / Devendo (R$)</option>
             </select>
           </div>
         </div>
 
-        <!-- Legenda Visual -->
         <div class="flex flex-wrap items-center gap-3 text-xs">
           <span class="inline-flex items-center gap-1.5 font-medium text-slate-700">
             <span class="w-4 h-4 rounded border border-emerald-500 bg-[#86efac]"></span>
-            Bateu a Meta (&ge; 100%)
+            Meta Batida (&ge; 100%)
           </span>
           <span class="inline-flex items-center gap-1.5 font-medium text-slate-700">
             <span class="w-4 h-4 rounded border border-rose-400 bg-[#fca5a5]"></span>
@@ -290,7 +378,6 @@
         </div>
       </section>
 
-      <!-- Tabela Matriz com Colunas Fixas e Cabeçalho Agrupado por Semana -->
       <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-auto max-h-[70vh] matrix-scroll">
           <table class="w-full border-collapse text-xs tabular-nums">
@@ -300,95 +387,24 @@
           </table>
         </div>
         <div class="px-4 py-2.5 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500 flex flex-wrap items-center justify-between gap-2">
-          <span>Dica: Clique em qualquer vendedor na tabela para abrir o gráfico e extrato individual dia a dia.</span>
+          <span>Clique em qualquer vendedor para abrir o gráfico de evolução diária e o extrato completo.</span>
           <span id="matrixRowCount">0 vendedores exibidos</span>
-        </div>
-      </section>
-    </div>
-
-    <!-- =================================================================== -->
-    <!-- ABA 2: ACOMPANHAMENTO DRILL-DOWN & META (QUANTO FICOU DEVENDO)      -->
-    <!-- =================================================================== -->
-    <div id="viewDrilldown" class="hidden space-y-5">
-      <!-- Nível 1: Drill-Down por Filial -->
-      <section>
-        <div class="flex items-center justify-between mb-2.5">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Nível 1 — Drill-Down por Filial (Clique para filtrar os vendedores)
-          </h2>
-          <button id="btnResetBranchFilter" type="button" class="text-xs font-semibold text-blue-600 hover:text-blue-700 hidden cursor-pointer">
-            Limpar filtro de filial
-          </button>
-        </div>
-        <div id="branchCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5"></div>
-      </section>
-
-      <!-- Barra de Filtros Temporais e Status -->
-      <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-end justify-between gap-4">
-        <div class="flex flex-wrap items-end gap-3">
-          <!-- Seletor de Análise Temporal -->
-          <div>
-            <label for="ddDateSelect" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Período / Dia de Análise</label>
-            <select id="ddDateSelect" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ACCUMULATED">Acumulado (Todos os dias preenchidos)</option>
-            </select>
-          </div>
-
-          <!-- Filtro de Status -->
-          <div>
-            <label for="ddStatusFilter" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Situação da Meta</label>
-            <select id="ddStatusFilter" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ALL">Todos os Vendedores</option>
-              <option value="DEVENDO">Abaixo da Meta / Ficou Devendo</option>
-              <option value="BATIDA">Bateram a Meta (&ge; 100%)</option>
-            </select>
-          </div>
-
-          <!-- Busca Vendedor -->
-          <div>
-            <label for="ddSearchInput" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Buscar Vendedor</label>
-            <input id="ddSearchInput" type="text" placeholder="Nome do vendedor..." class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm text-slate-800 w-52 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          </div>
-        </div>
-
-        <div id="ddSummaryPill" class="text-xs font-semibold text-slate-600 bg-slate-100 px-3.5 py-2 rounded-xl">
-          Exibindo desempenho acumulado
-        </div>
-      </section>
-
-      <!-- Nível 2: Tabela Ranking de Vendedores -->
-      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full border-collapse text-xs sm:text-sm tabular-nums">
-            <thead class="bg-slate-900 text-white text-left">
-              <tr>
-                <th class="px-4 py-3 font-bold cursor-pointer hover:bg-slate-800" data-sort="branch">Filial ↕</th>
-                <th class="px-4 py-3 font-bold cursor-pointer hover:bg-slate-800" data-sort="name">Vendedor ↕</th>
-                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800" data-sort="dailyMeta">Meta Diária ↕</th>
-                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800" data-sort="realizado">Realizado ↕</th>
-                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800" data-sort="metaEsperada">Meta Esperada ↕</th>
-                <th class="px-4 py-3 font-bold text-center cursor-pointer hover:bg-slate-800" data-sort="pct">% Atingimento ↕</th>
-                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800" data-sort="devendo">Ficou Devendo / Saldo ↕</th>
-                <th class="px-4 py-3 font-bold text-center">Ação</th>
-              </tr>
-            </thead>
-            <tbody id="ddRankingBody" class="divide-y divide-slate-200"></tbody>
-            <tfoot id="ddRankingFoot" class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300"></tfoot>
-          </table>
         </div>
       </section>
     </div>
   </main>
 
-  <!-- ===================================================================== -->
-  <!-- NÍVEL 3: MODAL DRILL-DOWN INDIVIDUAL DO VENDEDOR                      -->
-  <!-- ===================================================================== -->
-  <div id="sellerModal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
+  <!-- ======================================================================= -->
+  <!-- MODAL 1: DRILL-DOWN INDIVIDUAL DO VENDEDOR + GRÁFICO CHART.JS           -->
+  <!-- ======================================================================= -->
+  <div id="sellerModal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden">
-      <!-- Header do Modal -->
       <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between gap-4">
         <div>
-          <span id="modalSellerBranch" class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white mb-1">Filial 1</span>
+          <div class="flex items-center gap-2 mb-1">
+            <span id="modalSellerBranch" class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white">Filial</span>
+            <span id="modalSellerRegion" class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-700 text-slate-200">Região</span>
+          </div>
           <h3 id="modalSellerName" class="text-lg sm:text-xl font-extrabold">VENDEDOR</h3>
         </div>
         <button id="btnCloseSellerModal" type="button" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer">
@@ -398,16 +414,14 @@
         </button>
       </div>
 
-      <!-- Corpo do Modal -->
       <div class="p-5 overflow-y-auto space-y-5">
-        <!-- Cards de Resumo Individual -->
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 tabular-nums">
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
             <p class="text-[11px] font-bold uppercase text-slate-400">Meta Diária</p>
             <p id="modalMetaDiaria" class="text-base font-extrabold text-slate-900 mt-0.5">R$ 0,00</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <p class="text-[11px] font-bold uppercase text-slate-400">Total Vendido</p>
+            <p class="text-[11px] font-bold uppercase text-slate-400">Realizado Acum.</p>
             <p id="modalTotalVendido" class="text-base font-extrabold text-blue-600 mt-0.5">R$ 0,00</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
@@ -415,7 +429,7 @@
             <p id="modalPctGeral" class="text-base font-extrabold text-slate-900 mt-0.5">0,0%</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <p class="text-[11px] font-bold uppercase text-slate-400">Dias Batidos</p>
+            <p class="text-[11px] font-bold uppercase text-slate-400">Dias na Meta</p>
             <p id="modalDiasBatidos" class="text-base font-extrabold text-emerald-600 mt-0.5">0 / 0</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 col-span-2 sm:col-span-1">
@@ -424,15 +438,13 @@
           </div>
         </div>
 
-        <!-- Gráfico Chart.js -->
         <div class="p-4 rounded-2xl border border-slate-200 bg-white">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Evolução Diária vs. Meta Diária</h4>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Evolução Diária vs. Linha de Meta Diária</h4>
           <div class="h-60 w-full">
             <canvas id="sellerChartCanvas"></canvas>
           </div>
         </div>
 
-        <!-- Extrato Dia a Dia do Vendedor -->
         <div>
           <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Extrato Detalhado Dia a Dia</h4>
           <div class="overflow-x-auto rounded-xl border border-slate-200">
@@ -455,13 +467,75 @@
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- MODAL DE CONFIGURAÇÃO DE FONTE DE DADOS (URL CSV / COLAR PLANILHA)    -->
-  <!-- ===================================================================== -->
-  <div id="configModal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
+  <!-- ======================================================================= -->
+  <!-- MODAL 2: COPIADOR RÁPIDO DE LINKS REGIONAIS                             -->
+  <!-- ======================================================================= -->
+  <div id="linksModal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full overflow-hidden">
+      <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <h3 class="text-base font-bold">Links Diretos por Macro-Região</h3>
+        <button id="btnCloseLinksModal" type="button" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="p-5 space-y-4 text-xs sm:text-sm">
+        <p class="text-slate-600 text-xs">
+          Envie cada link abaixo para sua respectiva equipe. Ao abrir o link com <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-800">?regiao=...</code>, o painel trava automaticamente apenas nas filiais daquela região.
+        </p>
+
+        <!-- Link Sul -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-900">1. Link Região Sul (Londrina, Curitiba, Joinville e Porto Alegre)</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">LDA • CTB • JOI • POA</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="inputLinkSul" type="text" readonly class="flex-1 px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-mono text-slate-700" />
+            <button type="button" onclick="copyRegionalUrl('inputLinkSul', this)" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold cursor-pointer">
+              Copiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Link Norte / Nordeste / Goiânia -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-900">2. Link Norte / Nordeste / Goiânia</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">Demais Praças</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="inputLinkNorte" type="text" readonly class="flex-1 px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-mono text-slate-700" />
+            <button type="button" onclick="copyRegionalUrl('inputLinkNorte', this)" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold cursor-pointer">
+              Copiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Link Gestor Geral -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-900">3. Link Gestor Geral (Acesso Completo a Todas as Regiões)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="inputLinkGeral" type="text" readonly class="flex-1 px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-mono text-slate-700" />
+            <button type="button" onclick="copyRegionalUrl('inputLinkGeral', this)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold cursor-pointer">
+              Copiar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 3: CONFIGURAÇÃO DA PLANILHA GOOGLE SHEETS                         -->
+  <!-- ======================================================================= -->
+  <div id="configModal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-2xl w-full overflow-hidden">
       <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
-        <h3 class="text-base font-bold">Configuração da Planilha Google Sheets</h3>
+        <h3 class="text-base font-bold">Fonte de Dados — Google Sheets CSV</h3>
         <button id="btnCloseConfigModal" type="button" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -470,14 +544,14 @@
       </div>
       <div class="p-5 space-y-4 text-xs sm:text-sm">
         <div>
-          <label for="inputSheetUrl" class="block font-bold text-slate-700 mb-1">Link CSV Publicado do Google Sheets</label>
+          <label for="inputSheetUrl" class="block font-bold text-slate-700 mb-1">URL CSV Publicada do Google Sheets</label>
           <input id="inputSheetUrl" type="url" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <p class="text-[11px] text-slate-500 mt-1">O painel sincroniza automaticamente a cada 60 segundos usando múltiplas rotas anti-CORS.</p>
+          <p class="text-[11px] text-slate-500 mt-1">Sincronização automática a cada 60 segundos com detecção dinâmica de todas as datas até 30-nov.</p>
         </div>
 
         <div>
-          <label for="textareaPasteCsv" class="block font-bold text-slate-700 mb-1">Ou cole os dados diretamente do Excel / Google Sheets (Opcional / Modo Offline)</label>
-          <textarea id="textareaPasteCsv" rows="5" placeholder="Copie as células da planilha (incluindo Filial, Vendedor, META INICIAL e os dias) e cole aqui..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          <label for="textareaPasteCsv" class="block font-bold text-slate-700 mb-1">Ou cole os dados diretamente da planilha (Modo Contingência)</label>
+          <textarea id="textareaPasteCsv" rows="4" placeholder="Copie a tabela da planilha (Filial, Vendedor, META INICIAL e os dias) e cole aqui..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200">
@@ -489,7 +563,7 @@
               Carregar Texto Colado
             </button>
             <button id="btnSaveAndSyncUrl" type="button" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold cursor-pointer">
-              Salvar Link e Sincronizar
+              Salvar e Sincronizar
             </button>
           </div>
         </div>
@@ -497,70 +571,90 @@
     </div>
   </div>
 
-  <!-- ===================================================================== -->
-  <!-- JAVASCRIPT COMPLETO E ENCAPSULADO                                     -->
-  <!-- ===================================================================== -->
+  <!-- ======================================================================= -->
+  <!-- LÓGICA JAVASCRIPT COMPLETA                                              -->
+  <!-- ======================================================================= -->
   <script>
     // =========================================================================
-    // 1. CONFIGURAÇÃO E DADOS DE FALLBACK (COMPLETO ATÉ 30-NOV.)
+    // 1. CONSTANTES E DADOS DE FALLBACK (INCLUINDO SUL [LDA, CTB, JOI, POA] E NORTE/NE/GOIÂNIA)
     // =========================================================================
     const DEFAULT_GOOGLE_SHEET_CSV_URL =
       'https://docs.google.com/spreadsheets/d/e/2PACX-1vRlAaDAfnrWa0BvSWmc1HpdLI8VCxH0CDc8hyBGCkLyc3U-7HbD7YI4NNKUM1WlIA/pub?gid=283113571&single=true&output=csv';
+
+    const CITY_NAME_MAP = {
+      LDA: 'Londrina (PR)',
+      CTB: 'Curitiba (PR)',
+      JOI: 'Joinville (SC)',
+      POA: 'Porto Alegre (RS)',
+      GYN: 'Goiânia (GO)',
+      BSB: 'Brasília (DF)',
+      SLZ: 'São Luís (MA)',
+      BEL: 'Belém (PA)',
+      FOR: 'Fortaleza (CE)',
+      REC: 'Recife (PE)',
+      SSA: 'Salvador (BA)'
+    };
 
     const FALLBACK_SHEET_TSV = `;;1ª SEMANA;1ª SEMANA;1ª SEMANA;1ª SEMANA;;2ª SEMANA;2ª SEMANA;2ª SEMANA;2ª SEMANA;2ª SEMANA;;3ª SEMANA;3ª SEMANA;3ª SEMANA;3ª SEMANA;3ª SEMANA;;4ª SEMANA;4ª SEMANA;4ª SEMANA;4ª SEMANA;4ª SEMANA;;5ª SEMANA
 Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.;12-nov.;13-nov.;;16-nov.;17-nov.;18-nov.;19-nov.;20-nov.;;23-nov.;24-nov.;25-nov.;26-nov.;27-nov.;;30-nov.
 1;ADEMAR REP-LDA;25.537;R$ 15.907,28;R$ 10.271,02;R$ 25.518,53;R$ 12.797,74;;R$ 37.229,93;R$ 10.795,55;R$ 34.280,00;;;;;;;;;;;;;;;
 1;ALINE-LDA;20.094;R$ 30.711,82;R$ 24.487,43;R$ 20.929,85;R$ 25.346,54;;R$ 17.856,14;R$ 24.531,10;R$ 20.787,50;;;;;;;;;;;;;;;
 1;BRUNO-LDA;25.000;R$ 43.676,95;R$ 14.090,29;R$ 18.857,07;R$ 24.397,56;;R$ 22.115,74;R$ 24.944,46;R$ 21.913,62;;;;;;;;;;;;;;;
-1;EMERSON-LDA;29.500;R$ 12.115,61;R$ 32.260,20;R$ 21.495,81;R$ 17.244,70;;R$ 20.732,48;R$ 21.761,84;R$ 44.884,45;;;;;;;;;;;;;;;
-1;GOMES-LDA;13.684;R$ 14.771,12;R$ 9.385,49;R$ 12.661,36;R$ 11.727,83;;R$ 15.372,71;R$ 12.385,93;R$ 21.483,92;;;;;;;;;;;;;;;
-1;LUIZ-LDA;24.230;R$ 17.756,14;R$ 16.074,01;R$ 16.162,16;R$ 22.705,76;;R$ 26.199,66;R$ 25.912,82;R$ 14.524,19;;;;;;;;;;;;;;;
-1;MARA-LDA;9.300;R$ 4.439,14;R$ 8.142,32;R$ 7.836,24;R$ 8.319,56;;R$ 12.599,04;R$ 6.122,79;R$ 10.936,63;;;;;;;;;;;;;;;
-1;MAYCON-LDA;25.900;R$ 32.757,46;R$ 16.845,04;R$ 17.827,45;R$ 19.131,93;;R$ 36.054,17;R$ 17.081,88;R$ 21.334,93;;;;;;;;;;;;;;;
-1;NETO-LDA;14.851;R$ 18.224,86;R$ 13.944,66;R$ 8.733,67;R$ 7.774,71;;R$ 18.421,70;R$ 8.041,94;R$ 16.461,02;;;;;;;;;;;;;;;
-1;NURIA-LDA;24.422;R$ 28.791,47;R$ 21.578,12;R$ 29.828,86;R$ 26.379,48;;R$ 33.059,20;R$ 26.315,65;R$ 35.820,70;;;;;;;;;;;;;;;
 1;PEDRO-LDA;26.500;R$ 32.968,46;R$ 28.769,36;R$ 31.074,96;R$ 23.257,44;;R$ 28.780,28;R$ 35.586,47;R$ 29.260,79;;;;;;;;;;;;;;;
-1;RENATA-LDA;21.000;R$ 26.167,17;R$ 15.988,56;R$ 11.080,43;R$ 9.669,68;;R$ 22.679,59;R$ 21.168,82;R$ 28.305,02;;;;;;;;;;;;;;;
-2;ALMENDRO-CTB;12.895;R$ 12.780,82;R$ 10.000,73;R$ 12.497,43;R$ 21.227,89;;R$ 10.551,60;R$ 14.070,83;R$ 10.256,20;;;;;;;;;;;;;;;
 2;CARDOSO-CTB;20.526;R$ 25.383,30;R$ 18.010,98;R$ 17.082,30;R$ 13.779,69;;R$ 12.962,35;R$ 21.320,59;R$ 20.322,49;;;;;;;;;;;;;;;
-2;CELSO REP-CTB;16.421;R$ 12.017,79;R$ 9.521,62;R$ 11.247,62;R$ 25.907,17;;R$ 14.128,35;R$ 28.527,24;R$ 17.129,60;;;;;;;;;;;;;;;
 2;ELINEU-CTB;22.895;R$ 18.552,34;R$ 31.909,99;R$ 23.738,71;R$ 27.942,33;;R$ 36.050,81;R$ 25.427,90;R$ 18.295,90;;;;;;;;;;;;;;;
 2;EVANDRO-CTB;19.737;R$ 11.042,96;R$ 15.810,41;R$ 15.481,32;R$ 14.518,33;;R$ 38.797,58;R$ 35.185,44;R$ 24.589,96;;;;;;;;;;;;;;;
-2;EVILYN1-CTB;12.895;R$ 18.084,49;R$ 17.952,86;R$ 11.269,51;R$ 14.367,64;;R$ 11.714,98;R$ 16.802,99;R$ 12.538,24;;;;;;;;;;;;;;;
-2;JEAN-CTB;8.947;R$ 9.049,76;R$ 8.730,20;R$ 7.212,37;R$ 8.630,49;;R$ 7.588,68;R$ 6.522,84;R$ 6.964,36;;;;;;;;;;;;;;;
-2;JORGE-CTB;17.105;R$ 9.357,81;R$ 15.218,00;R$ 20.529,88;R$ 18.634,82;;R$ 12.392,97;R$ 25.021,26;R$ 15.590,58;;;;;;;;;;;;;;;
-2;SCHIANTEK-CTB;8.947;R$ 9.786,96;R$ 16.549,87;R$ 6.895,92;R$ 16.484,46;;R$ 11.537,73;R$ 9.804,15;R$ 6.888,00;;;;;;;;;;;;;;;
-2;THIAGO ANAS-CTB;26.316;R$ 14.673,01;R$ 19.418,81;R$ 23.915,77;R$ 22.949,65;;R$ 30.129,81;R$ 23.006,41;R$ 17.242,92;;;;;;;;;;;;;;;
 4;CARLOS-JOI;17.421;R$ 10.027,17;R$ 19.441,89;R$ 15.863,83;R$ 15.153,23;;R$ 11.795,54;R$ 31.032,09;R$ 15.478,14;;;;;;;;;;;;;;;
 4;EDUARDO-JOI;20.000;R$ 19.508,77;R$ 16.430,00;R$ 17.001,10;R$ 20.773,06;;R$ 16.259,64;R$ 18.427,94;R$ 17.433,38;;;;;;;;;;;;;;;
-4;HELIO-JOI;32.000;R$ 19.148,24;R$ 30.853,54;R$ 35.619,82;R$ 23.317,95;;R$ 39.353,33;R$ 27.954,81;R$ 37.469,05;;;;;;;;;;;;;;;`;
+4;HELIO-JOI;32.000;R$ 19.148,24;R$ 30.853,54;R$ 35.619,82;R$ 23.317,95;;R$ 39.353,33;R$ 27.954,81;R$ 37.469,05;;;;;;;;;;;;;;;
+5;MARCELO-POA;22.400;R$ 24.120,50;R$ 19.850,00;R$ 23.410,80;R$ 26.190,40;;R$ 21.300,00;R$ 25.890,15;R$ 24.670,90;;;;;;;;;;;;;;;
+5;FERNANDA-POA;18.900;R$ 17.450,20;R$ 21.340,60;R$ 16.980,45;R$ 19.540,00;;R$ 22.810,30;R$ 18.120,75;R$ 20.490,80;;;;;;;;;;;;;;;
+6;RODRIGO-GYN;24.500;R$ 26.840,10;R$ 21.190,40;R$ 25.920,00;R$ 22.450,80;;R$ 28.110,45;R$ 23.780,60;R$ 27.340,20;;;;;;;;;;;;;;;
+6;PATRICIA-GYN;19.200;R$ 18.120,00;R$ 20.450,90;R$ 19.870,30;R$ 16.540,20;;R$ 21.980,40;R$ 18.650,15;R$ 22.110,50;;;;;;;;;;;;;;;
+7;ANDERSON-SLZ;17.800;R$ 19.230,40;R$ 15.890,20;R$ 18.450,60;R$ 16.920,00;;R$ 20.140,80;R$ 17.320,50;R$ 19.890,10;;;;;;;;;;;;;;;
+8;RICARDO-BEL;21.000;R$ 22.450,00;R$ 18.760,30;R$ 20.110,90;R$ 23.890,40;;R$ 19.540,20;R$ 24.120,70;R$ 21.680,35;;;;;;;;;;;;;;;`;
 
     // =========================================================================
-    // 2. ESTADO GLOBAL DA APLICAÇÃO
+    // 2. DETECÇÃO DO PARÂMETRO DE REGIÃO NA URL (?regiao=sul | ?regiao=norte)
+    // =========================================================================
+    function getLockedRegionFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const raw = (params.get('regiao') || '').trim().toLowerCase();
+      if (raw === 'sul') return 'SUL';
+      if (raw === 'norte' || raw === 'nordeste' || raw === 'goiania' || raw === 'norte-nordeste') return 'NORTE';
+      return null; // Modo Gestor Geral (sem trava na URL)
+    }
+
+    const LOCKED_REGION = getLockedRegionFromUrl();
+
+    // =========================================================================
+    // 3. ESTADO GLOBAL DA APLICAÇÃO
     // =========================================================================
     const state = {
       sheetUrl: localStorage.getItem('painel_vendedores_csv_url') || DEFAULT_GOOGLE_SHEET_CSV_URL,
-      activeTab: 'matrix', // 'matrix' | 'drilldown'
-      dates: [], // [{ key: '3-nov.', week: '1ª SEMANA', isActive: true }]
-      sellers: [], // [{ id, branch, branchRaw, name, dailyMeta, dailySales: { '3-nov.': 15907.28, '12-nov.': null } }]
-      // Filtros Aba 1 (Matriz)
-      matrixBranch: 'ALL',
-      matrixSearch: '',
-      matrixMode: 'value', // 'value' | 'pct' | 'gap'
-      // Filtros Aba 2 (Drill-Down)
+      activeTab: 'drilldown', // 'drilldown' | 'matrix'
+      lockedRegion: LOCKED_REGION,
+      selectedRegion: LOCKED_REGION || 'ALL', // 'ALL' | 'SUL' | 'NORTE'
+      dates: [],
+      sellers: [],
+      // Filtros Drill-Down
       ddBranch: 'ALL',
       ddDate: 'ACCUMULATED',
       ddStatus: 'ALL',
       ddSearch: '',
       ddSortCol: 'devendo',
       ddSortDir: 'desc',
-      // Gráfico do Modal
+      // Filtros Matriz
+      matrixBranch: 'ALL',
+      matrixSearch: '',
+      matrixMode: 'value', // 'value' | 'pct' | 'gap'
+      // Chart.js & Timer
       sellerChartInstance: null,
       autoRefreshTimer: null
     };
 
     // =========================================================================
-    // 3. UTILITÁRIOS DE FORMATAÇÃO E PARSING
+    // 4. UTILITÁRIOS DE FORMATAÇÃO, CLASSIFICAÇÃO REGIONAL E PARSING
     // =========================================================================
     function formatBRL(val) {
       if (val === null || val === undefined || isNaN(val)) return '—';
@@ -581,8 +675,51 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     }
 
     /**
-     * Converte valores monetários/numéricos brasileiros ("R$ 15.907,28", "25.537", "15907.28")
-     * Retorna null para células vazias ou qualquer erro de fórmula PROCV (#N/D, #N/A, #VALOR!, etc.)
+     * Classifica automaticamente cada vendedor/filial entre:
+     * - 'SUL': -LDA (Londrina), -CTB (Curitiba), -JOI (Joinville), -POA (Porto Alegre) ou menção explícita a Sul/POA/RS/PR/SC
+     * - 'NORTE': Demais filiais (Goiânia, Norte e Nordeste)
+     */
+    function classifyMacroRegion(sellerName, branchRaw) {
+      const upperName = String(sellerName || '').toUpperCase().trim();
+      const upperBranch = String(branchRaw || '').toUpperCase().trim();
+      const combined = `${upperName} ${upperBranch}`;
+
+      // Verifica siglas de cidades do Sul no nome do vendedor (ex: ADEMAR REP-LDA, MARCELO-POA)
+      const sulTokens = ['LDA', 'CTB', 'JOI', 'POA'];
+      const hasSulSuffix = sulTokens.some(sigla => {
+        const regex = new RegExp(`(?:^|[-\\s/\\(])${sigla}(?:$|[-\\s/\\)])`);
+        return regex.test(upperName) || regex.test(upperBranch);
+      });
+
+      const hasSulKeyword =
+        combined.includes('PORTO ALEGRE') ||
+        combined.includes('LONDRINA') ||
+        combined.includes('CURITIBA') ||
+        combined.includes('JOINVILLE') ||
+        combined.includes('REGIAO SUL') ||
+        combined.includes('REGIÃO SUL');
+
+      return hasSulSuffix || hasSulKeyword ? 'SUL' : 'NORTE';
+    }
+
+    function extractCityCode(sellerName, branchRaw) {
+      const upperName = String(sellerName || '').toUpperCase().trim();
+      const match = upperName.match(/-([A-Z]{2,4})$/);
+      if (match && CITY_NAME_MAP[match[1]]) {
+        return { code: match[1], label: CITY_NAME_MAP[match[1]] };
+      }
+      for (const [code, label] of Object.entries(CITY_NAME_MAP)) {
+        const regex = new RegExp(`(?:^|[-\\s/])${code}(?:$|[-\\s/])`);
+        if (regex.test(upperName) || regex.test(String(branchRaw || '').toUpperCase())) {
+          return { code, label };
+        }
+      }
+      return { code: '', label: '' };
+    }
+
+    /**
+     * Converte strings monetárias brasileiras e retorna null para células vazias
+     * ou qualquer erro de fórmula PROCV (#N/D, #N/A, #VALOR!, #REF!, #DIV/0!, ERRO).
      */
     function parseBrazilianNumber(raw) {
       if (raw === null || raw === undefined) return null;
@@ -616,17 +753,13 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
       if (hasComma && hasDot) {
         if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
-          // Formato BR: 15.907,28
           str = str.replace(/\./g, '').replace(',', '.');
         } else {
-          // Formato US: 15,907.28
           str = str.replace(/,/g, '');
         }
       } else if (hasComma) {
-        // Ex.: 15907,28
         str = str.replace(',', '.');
       } else if (hasDot) {
-        // Ex.: 25.537 (milhar sem decimais) vs 15907.28
         const parts = str.split('.');
         if (parts.length > 2) {
           str = str.replace(/\./g, '');
@@ -639,10 +772,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       return isNaN(num) ? null : num;
     }
 
-    /**
-     * Parser robusto de CSV/TSV que detecta o delimitador (tab, ponto-e-vírgula ou vírgula)
-     * e respeita campos entre aspas.
-     */
     function parseDelimitedText(text) {
       const cleanText = String(text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
       if (!cleanText) return [];
@@ -696,17 +825,12 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       return rows.filter(r => r.some(cell => cell !== ''));
     }
 
-    /**
-     * Interpreta a grade da planilha, localizando dinamicamente as colunas de Filial,
-     * Vendedor, Meta Inicial e TODAS as datas (de 3-nov. até 30-nov. ou além).
-     */
     function parseSalesMatrix(rawText) {
       const grid = parseDelimitedText(rawText);
       if (grid.length < 2) {
-        throw new Error('A planilha retornou poucas linhas.');
+        throw new Error('Planilha sem dados suficientes.');
       }
 
-      // 1. Localiza a linha de cabeçalho contendo "Vendedor" / "Meta"
       let headerIdx = 0;
       for (let i = 0; i < Math.min(grid.length, 15); i++) {
         const rowNorm = grid[i].map(normalizeText);
@@ -722,7 +846,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       const headers = grid[headerIdx];
       const normHeaders = headers.map(normalizeText);
 
-      // Procura linha superior com nomes de semanas (1ª SEMANA ... 5ª SEMANA)
       let topWeekRow = [];
       for (let up = headerIdx - 1; up >= Math.max(0, headerIdx - 2); up--) {
         const cand = grid[up] || [];
@@ -732,7 +855,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         }
       }
 
-      // 2. Identifica índices das colunas fixas
       let idxBranch = normHeaders.findIndex(c => c.includes('filial') || c.includes('loja') || c.includes('unidade'));
       let idxSeller = normHeaders.findIndex(c => c.includes('vendedor') || c.includes('consultor') || c.includes('representante'));
       let idxMeta = normHeaders.findIndex(c => c.includes('meta'));
@@ -742,7 +864,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
       const fixedCols = new Set([idxBranch, idxSeller, idxMeta].filter(i => i >= 0));
 
-      // 3. Mapeia TODAS as colunas de datas sem limite fixo
       const candidateDates = [];
       let weekCounter = 1;
       let lastWeekName = '';
@@ -753,9 +874,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         const label = String(rawCol || '').trim();
 
         if (!label) {
-          if (candidateDates.length > 0) {
-            sawEmptySeparator = true;
-          }
+          if (candidateDates.length > 0) sawEmptySeparator = true;
           return;
         }
 
@@ -791,7 +910,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         });
       });
 
-      // 4. Extrai os vendedores e seus valores diários
       const sellers = [];
       for (let r = headerIdx + 1; r < grid.length; r++) {
         const row = grid[r];
@@ -809,14 +927,14 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         }
 
         const dailyMeta = parseBrazilianNumber(row[idxMeta]);
-        if (dailyMeta === null || dailyMeta <= 0) {
-          continue;
-        }
+        if (dailyMeta === null || dailyMeta <= 0) continue;
 
         const rawBranch = idxBranch >= 0 ? String(row[idxBranch] || '').trim() : '';
-        const branchLabel = rawBranch
-          ? (/^\d+$/.test(rawBranch) ? `Filial ${rawBranch}` : rawBranch)
-          : 'Geral';
+        const branchCode = rawBranch || 'Geral';
+        const cityInfo = extractCityCode(sellerName, rawBranch);
+        const branchBase = /^\d+$/.test(branchCode) ? `Filial ${branchCode}` : branchCode;
+        const branchDisplay = cityInfo.label ? `${branchBase} — ${cityInfo.label}` : branchBase;
+        const macroRegion = classifyMacroRegion(sellerName, rawBranch);
 
         const dailySales = {};
         candidateDates.forEach(d => {
@@ -824,9 +942,12 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         });
 
         sellers.push({
-          id: `${branchLabel}__${sellerName}__${r}`,
-          branch: branchLabel,
-          branchRaw: rawBranch || 'Geral',
+          id: `${branchCode}__${sellerName}__${r}`,
+          branchKey: branchBase,
+          branchRaw: branchCode,
+          branchDisplay,
+          cityLabel: cityInfo.label,
+          macroRegion, // 'SUL' | 'NORTE'
           name: sellerName,
           dailyMeta,
           dailySales
@@ -834,10 +955,9 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       }
 
       if (sellers.length === 0) {
-        throw new Error('Nenhum vendedor válido encontrado na estrutura da planilha.');
+        throw new Error('Nenhum vendedor válido encontrado.');
       }
 
-      // 5. Marca quais dias já foram preenchidos (possuem pelo menos 1 valor > 0) vs. dias futuros
       const dates = candidateDates.map(d => {
         const hasValues = sellers.some(s => s.dailySales[d.key] !== null && s.dailySales[d.key] > 0);
         return {
@@ -851,7 +971,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     }
 
     // =========================================================================
-    // 4. SINCRONIZAÇÃO AUTOMÁTICA COM GOOGLE SHEETS (MULTI-FALLBACK ANTI-CORS)
+    // 5. SINCRONIZAÇÃO COM GOOGLE SHEETS (COM MULTI-FALLBACK ANTI-CORS)
     // =========================================================================
     function updateSyncBadge(statusType, text) {
       const dot = document.getElementById('syncDot');
@@ -868,7 +988,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       }
     }
 
-    async function fetchWithTimeout(url, timeoutMs = 9000) {
+    async function fetchWithTimeout(url, timeoutMs = 8500) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -890,7 +1010,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       const baseUrl = state.sheetUrl.trim();
       const cacheBusterUrl = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}_ts=${Date.now()}`;
 
-      // Cadeia de tentativas: fetch direto -> allorigins -> corsproxy.io -> codetabs
       const fetchRoutes = [
         cacheBusterUrl,
         `https://api.allorigins.win/raw?url=${encodeURIComponent(cacheBusterUrl)}`,
@@ -910,12 +1029,11 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
             break;
           }
         } catch (e) {
-          // Tenta a próxima rota anti-CORS
+          // Tenta a próxima rota
         }
       }
 
       if (!loadedFromLive) {
-        // Fallback embutido caso esteja 100% offline
         if (state.sellers.length === 0) {
           parsedData = parseSalesMatrix(FALLBACK_SHEET_TSV);
         } else {
@@ -926,33 +1044,91 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       state.dates = parsedData.dates;
       state.sellers = parsedData.sellers;
 
-      populateFilterSelects();
+      populateSelectOptions();
       renderAll();
 
       const nowStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       if (loadedFromLive) {
-        updateSyncBadge('ok', `Sincronizado via Google Sheets • ${nowStr}`);
+        updateSyncBadge('ok', `Sincronizado • ${nowStr}`);
       } else {
-        updateSyncBadge('offline', `Modo Offline (Dados Locais) • ${nowStr}`);
+        updateSyncBadge('offline', `Modo Contingência Local • ${nowStr}`);
       }
 
       if (spinner) spinner.classList.remove('animate-spin');
     }
 
     // =========================================================================
-    // 5. ATUALIZAÇÃO DE FILTROS, KPIs E RENDERIZAÇÃO DAS 2 ABAS
+    // 6. ESCOPO REGIONAL E ATUALIZAÇÃO DE CONTROLES
     // =========================================================================
-    function populateFilterSelects() {
-      const branches = [...new Set(state.sellers.map(s => s.branch))];
+    function getRegionalSellers() {
+      if (state.selectedRegion === 'SUL') {
+        return state.sellers.filter(s => s.macroRegion === 'SUL');
+      }
+      if (state.selectedRegion === 'NORTE') {
+        return state.sellers.filter(s => s.macroRegion === 'NORTE');
+      }
+      return state.sellers;
+    }
 
-      // Select Filial da Matriz
+    function applyRegionalUIState() {
+      const badge = document.getElementById('regionLockBadge');
+      const switcherWrapper = document.getElementById('regionSwitcherWrapper');
+
+      if (state.lockedRegion === 'SUL') {
+        badge.textContent = 'Região Sul • Londrina, Curitiba, Joinville e Porto Alegre (POA)';
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30';
+        switcherWrapper.classList.add('hidden');
+      } else if (state.lockedRegion === 'NORTE') {
+        badge.textContent = 'Região Norte / Nordeste / Goiânia';
+        badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30';
+        switcherWrapper.classList.add('hidden');
+      } else {
+        switcherWrapper.classList.remove('hidden');
+        if (state.selectedRegion === 'SUL') {
+          badge.textContent = 'Filtro Ativo: Região Sul (LDA • CTB • JOI • POA)';
+          badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30';
+        } else if (state.selectedRegion === 'NORTE') {
+          badge.textContent = 'Filtro Ativo: Norte / Nordeste / Goiânia';
+          badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30';
+        } else {
+          badge.textContent = 'Modo Gestor Geral • Todas as Regiões';
+          badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30';
+        }
+
+        document.querySelectorAll('.region-btn').forEach(btn => {
+          const btnRegion = btn.getAttribute('data-region-btn');
+          if (btnRegion === state.selectedRegion) {
+            btn.className = 'region-btn px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer bg-blue-600 text-white shadow';
+          } else {
+            btn.className = 'region-btn px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60';
+          }
+        });
+      }
+    }
+
+    function populateSelectOptions() {
+      const regSellers = getRegionalSellers();
+      const branchMap = new Map();
+      regSellers.forEach(s => {
+        if (!branchMap.has(s.branchKey)) {
+          branchMap.set(s.branchKey, s.branchDisplay);
+        }
+      });
+
+      // Filtro de Filial da Matriz
       const matrixBranchEl = document.getElementById('matrixBranchFilter');
       const prevMatrixBranch = matrixBranchEl.value;
-      matrixBranchEl.innerHTML = '<option value="ALL">Todas as Filiais</option>' +
-        branches.map(b => `<option value="${b}">${b}</option>`).join('');
-      if (branches.includes(prevMatrixBranch)) matrixBranchEl.value = prevMatrixBranch;
+      matrixBranchEl.innerHTML = '<option value="ALL">Todas as Filiais da Região</option>' +
+        Array.from(branchMap.entries())
+          .map(([key, label]) => `<option value="${key}">${label}</option>`)
+          .join('');
+      if (branchMap.has(prevMatrixBranch)) {
+        matrixBranchEl.value = prevMatrixBranch;
+      } else {
+        state.matrixBranch = 'ALL';
+      }
 
-      // Select Data do Drill-Down
+      // Filtro de Data de Referência do Drill-Down
       const ddDateEl = document.getElementById('ddDateSelect');
       const prevDdDate = ddDateEl.value;
       const activeDates = state.dates.filter(d => d.isActive);
@@ -960,12 +1136,12 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
       let optionsHtml = `<option value="ACCUMULATED">Acumulado (${activeDates.length} dias preenchidos)</option>`;
       if (activeDates.length > 0) {
-        optionsHtml += `<optgroup label="Dias Preenchidos">` +
+        optionsHtml += `<optgroup label="Dias já alimentados">` +
           [...activeDates].reverse().map(d => `<option value="${d.key}">${d.key} (${d.week})</option>`).join('') +
           `</optgroup>`;
       }
       if (futureDates.length > 0) {
-        optionsHtml += `<optgroup label="Dias Futuros (Em Branco)">` +
+        optionsHtml += `<optgroup label="Dias futuros (Em branco)">` +
           futureDates.map(d => `<option value="${d.key}">${d.key} (${d.week})</option>`).join('') +
           `</optgroup>`;
       }
@@ -977,56 +1153,65 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       }
     }
 
-    function updateHeaderAndTopKPIs() {
+    function updateKPIs() {
       const activeDates = state.dates.filter(d => d.isActive);
       const totalDays = state.dates.length;
       const lastCalendarDay = totalDays > 0 ? state.dates[totalDays - 1].key : '30-nov.';
 
       document.getElementById('headerSubtitle').textContent =
-        `${activeDates.length} de ${totalDays} dias úteis preenchidos até ${lastCalendarDay} • Células futuras e #N/D ignorados automaticamente`;
+        `${activeDates.length} de ${totalDays} dias úteis preenchidos até ${lastCalendarDay} • Dias futuros e #N/D ignorados automaticamente`;
 
-      // Define escopo de cálculo conforme a aba ativa e filtros selecionados
-      let targetSellers = state.sellers;
+      let scopedSellers = getRegionalSellers();
       let targetDateKeys = activeDates.map(d => d.key);
-      let scopeLabel = `Acumulado (${activeDates.length} dias ativos)`;
 
-      if (state.activeTab === 'matrix') {
-        if (state.matrixBranch !== 'ALL') {
-          targetSellers = targetSellers.filter(s => s.branch === state.matrixBranch);
-          scopeLabel += ` • ${state.matrixBranch}`;
-        }
-      } else {
+      if (state.activeTab === 'drilldown') {
         if (state.ddBranch !== 'ALL') {
-          targetSellers = targetSellers.filter(s => s.branch === state.ddBranch);
-          scopeLabel = `${state.ddBranch}`;
+          scopedSellers = scopedSellers.filter(s => s.branchKey === state.ddBranch);
         }
         if (state.ddDate !== 'ACCUMULATED') {
-          const dayObj = state.dates.find(d => d.key === state.ddDate);
-          targetDateKeys = dayObj && dayObj.isActive ? [dayObj.key] : [];
-          scopeLabel = `Dia ${state.ddDate}${state.ddBranch !== 'ALL' ? ' • ' + state.ddBranch : ''}`;
+          const dObj = state.dates.find(d => d.key === state.ddDate);
+          targetDateKeys = dObj && dObj.isActive ? [dObj.key] : [];
+        }
+      } else {
+        if (state.matrixBranch !== 'ALL') {
+          scopedSellers = scopedSellers.filter(s => s.branchKey === state.matrixBranch);
         }
       }
 
       const daysCount = targetDateKeys.length;
-      let totalRealizado = 0;
-      let totalMeta = 0;
+      let sumMeta = 0;
+      let sumReal = 0;
+      let sumDevendo = 0;
+      let countOnTarget = 0;
 
-      targetSellers.forEach(s => {
-        totalMeta += s.dailyMeta * daysCount;
-        targetDateKeys.forEach(dk => {
-          totalRealizado += s.dailySales[dk] || 0;
-        });
+      scopedSellers.forEach(s => {
+        const sMeta = s.dailyMeta * daysCount;
+        const sReal = targetDateKeys.reduce((acc, dk) => acc + (s.dailySales[dk] || 0), 0);
+        sumMeta += sMeta;
+        sumReal += sReal;
+        if (daysCount > 0) {
+          if (sReal < sMeta) {
+            sumDevendo += (sMeta - sReal);
+          } else {
+            countOnTarget++;
+          }
+        }
       });
 
-      const pctGeral = totalMeta > 0 ? (totalRealizado / totalMeta) * 100 : 0;
-      const diff = totalRealizado - totalMeta; // negativo = ficou devendo
+      const pctGeral = sumMeta > 0 ? (sumReal / sumMeta) * 100 : 0;
+      const netDiff = sumReal - sumMeta;
 
-      document.getElementById('kpiRealizado').textContent = formatBRL(totalRealizado);
-      document.getElementById('kpiRealizadoSub').textContent = `${targetSellers.length} vendedores • ${scopeLabel}`;
-
-      document.getElementById('kpiMeta').textContent = formatBRL(totalMeta);
+      document.getElementById('kpiMeta').textContent = formatBRL(sumMeta);
       document.getElementById('kpiMetaSub').textContent =
-        daysCount === 1 ? 'Meta referente a 1 dia selecionado' : `Soma das metas diárias × ${daysCount} dias preenchidos`;
+        daysCount === 1 ? 'Meta referente a 1 dia selecionado' : `${scopedSellers.length} vendedores × ${daysCount} dias ativos`;
+
+      document.getElementById('kpiRealizado').textContent = formatBRL(sumReal);
+      document.getElementById('kpiRealizadoSub').textContent =
+        state.selectedRegion === 'SUL'
+          ? 'Região Sul (LDA, CTB, JOI e POA)'
+          : state.selectedRegion === 'NORTE'
+            ? 'Norte / Nordeste / Goiânia'
+            : 'Todas as regiões consolidadas';
 
       document.getElementById('kpiPct').textContent = formatPct(pctGeral);
       const pctBadge = document.getElementById('kpiPctBadge');
@@ -1034,12 +1219,12 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       pctBar.style.width = `${Math.min(100, Math.max(0, pctGeral))}%`;
 
       if (pctGeral >= 100) {
-        pctBadge.textContent = 'Meta Batida';
-        pctBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
+        pctBadge.textContent = 'Acima da Meta';
+        pctBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800';
         pctBar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-300';
       } else {
-        pctBadge.textContent = 'Em Acompanhamento';
-        pctBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800';
+        pctBadge.textContent = 'Em Evolução';
+        pctBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800';
         pctBar.className = 'h-full bg-blue-600 rounded-full transition-all duration-300';
       }
 
@@ -1049,37 +1234,282 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
       if (daysCount === 0) {
         kpiGapEl.textContent = 'R$ 0,00';
-        kpiGapEl.className = 'text-2xl font-extrabold text-slate-400 mt-2 tabular-nums';
+        kpiGapEl.className = 'text-xl sm:text-2xl font-extrabold text-slate-400 mt-2 tabular-nums';
         kpiGapBadge.textContent = 'Dia Futuro';
-        kpiGapBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600';
-        kpiGapSub.textContent = 'Aguardando preenchimento na planilha';
-      } else if (diff < 0) {
-        kpiGapEl.textContent = formatBRL(Math.abs(diff));
-        kpiGapEl.className = 'text-2xl font-extrabold text-rose-600 mt-2 tabular-nums';
-        kpiGapBadge.textContent = 'Ficou Devendo';
-        kpiGapBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800';
-        kpiGapSub.textContent = 'Valor faltante para atingir 100% da meta';
+        kpiGapBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600';
+        kpiGapSub.textContent = 'Aguardando preenchimento';
+      } else if (netDiff < 0) {
+        kpiGapEl.textContent = formatBRL(Math.abs(netDiff));
+        kpiGapEl.className = 'text-xl sm:text-2xl font-extrabold text-rose-600 mt-2 tabular-nums';
+        kpiGapBadge.textContent = 'Gap Líquido';
+        kpiGapBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800';
+        kpiGapSub.textContent = `Soma individual devedora: ${formatBRL(sumDevendo)}`;
       } else {
-        kpiGapEl.textContent = `+ ${formatBRL(diff)}`;
-        kpiGapEl.className = 'text-2xl font-extrabold text-emerald-600 mt-2 tabular-nums';
+        kpiGapEl.textContent = `+ ${formatBRL(netDiff)}`;
+        kpiGapEl.className = 'text-xl sm:text-2xl font-extrabold text-emerald-600 mt-2 tabular-nums';
         kpiGapBadge.textContent = 'Superávit';
-        kpiGapBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800';
-        kpiGapSub.textContent = 'Valor vendido acima da meta esperada';
+        kpiGapBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800';
+        kpiGapSub.textContent = sumDevendo > 0 ? `Devedores individuais: ${formatBRL(sumDevendo)}` : '100% da equipe positiva';
       }
+
+      document.getElementById('kpiOnTarget').textContent = `${countOnTarget} / ${scopedSellers.length}`;
+      const hitRate = scopedSellers.length > 0 ? (countOnTarget / scopedSellers.length) * 100 : 0;
+      document.getElementById('kpiOnTargetSub').textContent = `${formatPct(hitRate)} da equipe batendo a meta`;
     }
 
     // =========================================================================
-    // 6. RENDERIZAÇÃO ABA 1: VISÃO GERAL DIÁRIA (MATRIZ)
+    // 7. RENDERIZAÇÃO ABA DRILL-DOWN & META
+    // =========================================================================
+    function renderDrilldownTab() {
+      const regSellers = getRegionalSellers();
+      const activeDates = state.dates.filter(d => d.isActive);
+      const isAccumulated = state.ddDate === 'ACCUMULATED';
+      const selectedDayObj = isAccumulated ? null : state.dates.find(d => d.key === state.ddDate);
+      const isFutureDay = selectedDayObj && !selectedDayObj.isActive;
+
+      const targetDateKeys = isAccumulated
+        ? activeDates.map(d => d.key)
+        : (selectedDayObj && selectedDayObj.isActive ? [selectedDayObj.key] : []);
+      const daysMultiplier = targetDateKeys.length;
+
+      const computedAll = regSellers.map(s => {
+        const metaEsperada = s.dailyMeta * daysMultiplier;
+        const realizado = targetDateKeys.reduce((acc, dk) => acc + (s.dailySales[dk] || 0), 0);
+        const pct = metaEsperada > 0 ? (realizado / metaEsperada) * 100 : 0;
+        const diff = realizado - metaEsperada;
+        const devendo = isFutureDay ? 0 : Math.max(0, metaEsperada - realizado);
+        return {
+          ...s,
+          metaEsperada,
+          realizado,
+          pct,
+          diff,
+          devendo
+        };
+      });
+
+      renderBranchCards(computedAll, isFutureDay);
+
+      const searchNorm = normalizeText(state.ddSearch);
+      let filtered = computedAll.filter(item => {
+        if (state.ddBranch !== 'ALL' && item.branchKey !== state.ddBranch) return false;
+        if (state.ddStatus === 'DEVENDO' && item.diff >= 0) return false;
+        if (state.ddStatus === 'BATIDA' && item.diff < 0) return false;
+        if (
+          searchNorm &&
+          !normalizeText(item.name).includes(searchNorm) &&
+          !normalizeText(item.branchDisplay).includes(searchNorm)
+        ) {
+          return false;
+        }
+        return true;
+      });
+
+      const col = state.ddSortCol;
+      const dir = state.ddSortDir === 'asc' ? 1 : -1;
+      filtered.sort((a, b) => {
+        if (col === 'name' || col === 'branchDisplay') {
+          return a[col].localeCompare(b[col]) * dir;
+        }
+        return (a[col] - b[col]) * dir;
+      });
+
+      document.getElementById('ddSummaryPill').textContent = isAccumulated
+        ? `Acumulado (${daysMultiplier} dias preenchidos) • ${filtered.length} vendedores`
+        : `Dia ${state.ddDate} • ${filtered.length} vendedores`;
+
+      const tbody = document.getElementById('ddRankingBody');
+      const tfoot = document.getElementById('ddRankingFoot');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+              Nenhum vendedor encontrado com os filtros aplicados.
+            </td>
+          </tr>
+        `;
+        tfoot.innerHTML = '';
+        return;
+      }
+
+      let sumDailyMeta = 0;
+      let sumMetaEsp = 0;
+      let sumReal = 0;
+
+      tbody.innerHTML = filtered.map(item => {
+        sumDailyMeta += item.dailyMeta;
+        sumMetaEsp += item.metaEsperada;
+        sumReal += item.realizado;
+
+        const isHit = item.diff >= 0 && !isFutureDay;
+        const barWidth = Math.min(100, Math.max(0, item.pct));
+
+        let gapCellHtml = '';
+        if (isFutureDay) {
+          gapCellHtml = `<span class="text-slate-400 font-medium">Aguardando</span>`;
+        } else if (item.diff < 0) {
+          gapCellHtml = `
+            <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-bold text-xs">
+              Devendo ${formatBRL(Math.abs(item.diff))}
+            </span>
+          `;
+        } else {
+          gapCellHtml = `
+            <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs">
+              + ${formatBRL(item.diff)}
+            </span>
+          `;
+        }
+
+        return `
+          <tr onclick="openSellerModal('${item.id.replace(/'/g, "\\'")}')" class="hover:bg-blue-50/70 transition cursor-pointer">
+            <td class="px-4 py-3 font-semibold text-slate-600 whitespace-nowrap">${item.branchDisplay}</td>
+            <td class="px-4 py-3 font-bold text-slate-900 whitespace-nowrap">${item.name}</td>
+            <td class="px-4 py-3 text-right text-slate-700">${formatBRL(item.dailyMeta)}</td>
+            <td class="px-4 py-3 text-right text-slate-700">${isFutureDay ? '—' : formatBRL(item.metaEsperada)}</td>
+            <td class="px-4 py-3 text-right font-bold text-slate-900">${isFutureDay ? '—' : formatBRL(item.realizado)}</td>
+            <td class="px-4 py-3">
+              <div class="flex flex-col items-center gap-1">
+                <span class="text-xs font-extrabold ${isFutureDay ? 'text-slate-400' : isHit ? 'text-emerald-700' : 'text-rose-700'}">
+                  ${isFutureDay ? '—' : formatPct(item.pct)}
+                </span>
+                <div class="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full ${isHit ? 'bg-emerald-500' : 'bg-rose-500'}" style="width: ${isFutureDay ? 0 : barWidth}%"></div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">${gapCellHtml}</td>
+            <td class="px-4 py-3 text-center whitespace-nowrap">
+              <button type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 text-slate-700 hover:text-white text-xs font-semibold transition cursor-pointer">
+                Ver Diário
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalPct = sumMetaEsp > 0 ? (sumReal / sumMetaEsp) * 100 : 0;
+      const totalDiff = sumReal - sumMetaEsp;
+
+      tfoot.innerHTML = `
+        <tr>
+          <td class="px-4 py-3" colspan="2">TOTAL FILTRADO (${filtered.length} vendedores)</td>
+          <td class="px-4 py-3 text-right">${formatBRL(sumDailyMeta)}</td>
+          <td class="px-4 py-3 text-right">${isFutureDay ? '—' : formatBRL(sumMetaEsp)}</td>
+          <td class="px-4 py-3 text-right">${isFutureDay ? '—' : formatBRL(sumReal)}</td>
+          <td class="px-4 py-3 text-center ${totalPct >= 100 ? 'text-emerald-700' : 'text-rose-700'}">${isFutureDay ? '—' : formatPct(totalPct)}</td>
+          <td class="px-4 py-3 text-right ${totalDiff >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
+            ${isFutureDay ? '—' : (totalDiff < 0 ? 'Devendo ' + formatBRL(Math.abs(totalDiff)) : '+' + formatBRL(totalDiff))}
+          </td>
+          <td class="px-4 py-3"></td>
+        </tr>
+      `;
+    }
+
+    function renderBranchCards(computedAll, isFutureDay) {
+      const container = document.getElementById('branchCardsContainer');
+      const resetBtn = document.getElementById('btnResetBranchFilter');
+
+      if (state.ddBranch !== 'ALL') {
+        resetBtn.classList.remove('hidden');
+      } else {
+        resetBtn.classList.add('hidden');
+      }
+
+      // Agrupa filiais únicas dentro da região selecionada
+      const branchGroups = [{ key: 'ALL', label: 'Todas as Filiais da Região' }];
+      const seenKeys = new Set(['ALL']);
+      computedAll.forEach(s => {
+        if (!seenKeys.has(s.branchKey)) {
+          seenKeys.add(s.branchKey);
+          branchGroups.push({ key: s.branchKey, label: s.branchDisplay });
+        }
+      });
+
+      if (!seenKeys.has(state.ddBranch)) {
+        state.ddBranch = 'ALL';
+      }
+
+      container.innerHTML = branchGroups.map(bg => {
+        const isAll = bg.key === 'ALL';
+        const members = isAll ? computedAll : computedAll.filter(s => s.branchKey === bg.key);
+
+        const bReal = members.reduce((a, b) => a + b.realizado, 0);
+        const bMeta = members.reduce((a, b) => a + b.metaEsperada, 0);
+        const bDiff = bReal - bMeta;
+        const bPct = bMeta > 0 ? (bReal / bMeta) * 100 : 0;
+        const belowCount = members.filter(m => m.diff < 0).length;
+        const selected = state.ddBranch === bg.key;
+
+        return `
+          <button type="button" onclick="selectDrilldownBranch('${bg.key.replace(/'/g, "\\'")}')"
+            class="text-left p-4 rounded-2xl border transition-all cursor-pointer ${
+              selected
+                ? 'bg-blue-50/90 border-blue-500 ring-2 ring-blue-500/20 shadow-sm'
+                : 'bg-white border-slate-200 hover:border-blue-300 hover:shadow-sm'
+            }">
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <span class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug">${bg.label}</span>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 ${
+                isFutureDay
+                  ? 'bg-slate-100 text-slate-600'
+                  : bPct >= 100
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-rose-100 text-rose-800'
+              }">
+                ${isFutureDay ? 'Futuro' : formatPct(bPct)}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs mb-2.5 tabular-nums">
+              <div>
+                <p class="text-[11px] text-slate-400">Realizado</p>
+                <p class="font-bold text-slate-800">${isFutureDay ? '—' : formatBRL(bReal)}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-[11px] text-slate-400">${bDiff < 0 ? 'Ficou Devendo' : 'Saldo Acima'}</p>
+                <p class="font-bold ${isFutureDay ? 'text-slate-400' : bDiff < 0 ? 'text-rose-600' : 'text-emerald-600'}">
+                  ${isFutureDay ? '—' : (bDiff < 0 ? formatBRL(Math.abs(bDiff)) : '+' + formatBRL(bDiff))}
+                </p>
+              </div>
+            </div>
+
+            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mb-2">
+              <div class="h-full rounded-full ${bPct >= 100 ? 'bg-emerald-500' : 'bg-blue-600'}" style="width: ${isFutureDay ? 0 : Math.min(100, bPct)}%"></div>
+            </div>
+
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span>${members.length} vend. (${belowCount} abaixo)</span>
+              <span class="font-semibold text-blue-600">${selected ? 'Filtrado ✓' : 'Filtrar →'}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    window.selectDrilldownBranch = function(branchKey) {
+      state.ddBranch = branchKey;
+      renderAll();
+    };
+
+    // =========================================================================
+    // 8. RENDERIZAÇÃO ABA MATRIZ DIÁRIA (VISÃO GERAL)
     // =========================================================================
     function renderMatrixTab() {
       const thead = document.getElementById('matrixTableHead');
       const tbody = document.getElementById('matrixTableBody');
       const tfoot = document.getElementById('matrixTableFoot');
 
+      const regSellers = getRegionalSellers();
       const searchNorm = normalizeText(state.matrixSearch);
-      const filteredSellers = state.sellers.filter(s => {
-        if (state.matrixBranch !== 'ALL' && s.branch !== state.matrixBranch) return false;
-        if (searchNorm && !normalizeText(s.name).includes(searchNorm) && !normalizeText(s.branch).includes(searchNorm)) {
+      const filteredSellers = regSellers.filter(s => {
+        if (state.matrixBranch !== 'ALL' && s.branchKey !== state.matrixBranch) return false;
+        if (
+          searchNorm &&
+          !normalizeText(s.name).includes(searchNorm) &&
+          !normalizeText(s.branchDisplay).includes(searchNorm)
+        ) {
           return false;
         }
         return true;
@@ -1087,22 +1517,20 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
       document.getElementById('matrixRowCount').textContent = `${filteredSellers.length} vendedores exibidos`;
 
-      // Agrupa colunas consecutivas por semana (1ª SEMANA ... 5ª SEMANA)
       const weekGroups = [];
       state.dates.forEach(d => {
-        const lastGroup = weekGroups[weekGroups.length - 1];
-        if (lastGroup && lastGroup.week === d.week) {
-          lastGroup.count += 1;
+        const last = weekGroups[weekGroups.length - 1];
+        if (last && last.week === d.week) {
+          last.count += 1;
         } else {
           weekGroups.push({ week: d.week, count: 1 });
         }
       });
 
-      // Linha 1 do Cabeçalho: Grupos de Semanas + Resumo
       let headRow1 = `
         <tr class="bg-slate-950 text-slate-300 text-[11px] uppercase tracking-wider">
-          <th class="sticky-col-1 bg-slate-950 px-2 py-2 border-r border-slate-800 w-[64px] min-w-[64px]"></th>
-          <th class="sticky-col-2 bg-slate-950 px-3 py-2 border-r border-slate-800 w-[170px] min-w-[170px]"></th>
+          <th class="sticky-col-1 bg-slate-950 px-2 py-2 border-r border-slate-800 w-[68px] min-w-[68px]"></th>
+          <th class="sticky-col-2 bg-slate-950 px-3 py-2 border-r border-slate-800 w-[180px] min-w-[180px]"></th>
           <th class="sticky-col-3 bg-slate-950 px-3 py-2 border-r border-slate-700 w-[115px] min-w-[115px]"></th>
       `;
 
@@ -1112,16 +1540,15 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       });
 
       headRow1 += `
-          <th colspan="4" class="bg-slate-950 text-amber-300 px-3 py-1.5 text-center font-extrabold">CONSOLIDADO (DIAS PREENCHIDOS)</th>
+          <th colspan="4" class="bg-slate-950 text-amber-300 px-3 py-1.5 text-center font-extrabold">ACUMULADO (DIAS PREENCHIDOS)</th>
         </tr>
       `;
 
-      // Linha 2 do Cabeçalho: Filial | Vendedor | META INICIAL | Datas | Totais
       let headRow2 = `
         <tr class="bg-slate-800 text-white text-xs">
-          <th class="sticky-col-1 bg-slate-800 px-2 py-2.5 text-center font-bold border-r border-slate-700 w-[64px] min-w-[64px]">Filial</th>
-          <th class="sticky-col-2 bg-slate-800 px-3 py-2.5 text-left font-bold border-r border-slate-700 w-[170px] min-w-[170px]">Vendedor</th>
-          <th class="sticky-col-3 bg-slate-800 px-3 py-2.5 text-right font-bold border-r border-slate-600 w-[115px] min-w-[115px]">META INICIAL</th>
+          <th class="sticky-col-1 bg-slate-800 px-2 py-2.5 text-center font-bold border-r border-slate-700 w-[68px] min-w-[68px]">Filial</th>
+          <th class="sticky-col-2 bg-slate-800 px-3 py-2.5 text-left font-bold border-r border-slate-700 w-[180px] min-w-[180px]">Vendedor</th>
+          <th class="sticky-col-3 bg-slate-800 px-3 py-2.5 text-right font-bold border-r border-slate-600 w-[115px] min-w-[115px]">Meta Diária</th>
       `;
 
       state.dates.forEach(d => {
@@ -1135,8 +1562,8 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       });
 
       headRow2 += `
-          <th class="px-3 py-2.5 text-right font-bold bg-slate-900 border-r border-slate-700 min-w-[120px] whitespace-nowrap">Total Realizado</th>
-          <th class="px-3 py-2.5 text-right font-bold bg-slate-900 border-r border-slate-700 min-w-[120px] whitespace-nowrap">Meta Acumulada</th>
+          <th class="px-3 py-2.5 text-right font-bold bg-slate-900 border-r border-slate-700 min-w-[120px] whitespace-nowrap">Realizado</th>
+          <th class="px-3 py-2.5 text-right font-bold bg-slate-900 border-r border-slate-700 min-w-[120px] whitespace-nowrap">Meta Acum.</th>
           <th class="px-3 py-2.5 text-center font-bold bg-slate-900 border-r border-slate-700 min-w-[90px] whitespace-nowrap">% Ating.</th>
           <th class="px-3 py-2.5 text-right font-bold bg-slate-900 min-w-[125px] whitespace-nowrap">Ficou Devendo</th>
         </tr>
@@ -1144,7 +1571,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
       thead.innerHTML = headRow1 + headRow2;
 
-      // Corpo da Matriz
       const activeDates = state.dates.filter(d => d.isActive);
       const activeCount = activeDates.length;
 
@@ -1197,7 +1623,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         return `
           <tr onclick="openSellerModal('${s.id.replace(/'/g, "\\'")}')" class="hover:brightness-95 transition cursor-pointer group">
             <td class="sticky-col-1 bg-white group-hover:bg-blue-50 px-2 py-2 text-center font-semibold text-slate-700 border-r border-slate-200">${s.branchRaw}</td>
-            <td class="sticky-col-2 bg-white group-hover:bg-blue-50 px-3 py-2 text-left font-bold text-slate-900 border-r border-slate-200 truncate max-w-[170px]" title="${s.name}">${s.name}</td>
+            <td class="sticky-col-2 bg-white group-hover:bg-blue-50 px-3 py-2 text-left font-bold text-slate-900 border-r border-slate-200 truncate max-w-[180px]" title="${s.branchDisplay}">${s.name}</td>
             <td class="sticky-col-3 bg-slate-50 group-hover:bg-blue-50 px-3 py-2 text-right font-semibold text-slate-800 border-r border-slate-300">${formatBRL(s.dailyMeta)}</td>
             ${dayCellsHtml}
             <td class="px-3 py-2 text-right font-bold text-slate-900 bg-slate-50 border-r border-slate-200 whitespace-nowrap">${formatBRL(sellerTotalReal)}</td>
@@ -1208,7 +1634,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         `;
       }).join('');
 
-      // Rodapé Totalizador da Matriz
       const footDayCells = state.dates.map(d => {
         if (!d.isActive) {
           return `<td class="px-2 py-2.5 text-center text-slate-500 border-r border-slate-800">—</td>`;
@@ -1231,7 +1656,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       tfoot.innerHTML = `
         <tr>
           <td class="sticky-col-1 bg-slate-900 px-2 py-2.5 text-center border-r border-slate-800">—</td>
-          <td class="sticky-col-2 bg-slate-900 px-3 py-2.5 text-left border-r border-slate-800">TOTAL GERAL</td>
+          <td class="sticky-col-2 bg-slate-900 px-3 py-2.5 text-left border-r border-slate-800">TOTAL EXIBIDO</td>
           <td class="sticky-col-3 bg-slate-900 px-3 py-2.5 text-right border-r border-slate-700">${formatBRL(grandMetaDiaria)}</td>
           ${footDayCells}
           <td class="px-3 py-2.5 text-right border-r border-slate-800 whitespace-nowrap">${formatBRL(grandRealizado)}</td>
@@ -1245,229 +1670,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     }
 
     // =========================================================================
-    // 7. RENDERIZAÇÃO ABA 2: ACOMPANHAMENTO DRILL-DOWN & META
-    // =========================================================================
-    function renderDrilldownTab() {
-      const activeDates = state.dates.filter(d => d.isActive);
-      const isAccumulated = state.ddDate === 'ACCUMULATED';
-      const selectedDayObj = isAccumulated ? null : state.dates.find(d => d.key === state.ddDate);
-      const isFutureDay = selectedDayObj && !selectedDayObj.isActive;
-
-      const targetDateKeys = isAccumulated
-        ? activeDates.map(d => d.key)
-        : (selectedDayObj && selectedDayObj.isActive ? [selectedDayObj.key] : []);
-      const daysMultiplier = targetDateKeys.length;
-
-      // Calcula desempenho de todos os vendedores para o período selecionado
-      const computedAll = state.sellers.map(s => {
-        const metaEsperada = s.dailyMeta * daysMultiplier;
-        const realizado = targetDateKeys.reduce((acc, dk) => acc + (s.dailySales[dk] || 0), 0);
-        const pct = metaEsperada > 0 ? (realizado / metaEsperada) * 100 : 0;
-        const diff = realizado - metaEsperada; // negativo = ficou devendo
-        const devendo = isFutureDay ? 0 : Math.max(0, metaEsperada - realizado);
-        return {
-          ...s,
-          metaEsperada,
-          realizado,
-          pct,
-          diff,
-          devendo
-        };
-      });
-
-      // Nível 1: Cards Clicáveis de Drill-Down por Filial
-      renderBranchCards(computedAll, isFutureDay);
-
-      // Filtra vendedores para o Nível 2 (Tabela Ranking)
-      const searchNorm = normalizeText(state.ddSearch);
-      let filtered = computedAll.filter(item => {
-        if (state.ddBranch !== 'ALL' && item.branch !== state.ddBranch) return false;
-        if (state.ddStatus === 'DEVENDO' && item.diff >= 0) return false;
-        if (state.ddStatus === 'BATIDA' && item.diff < 0) return false;
-        if (searchNorm && !normalizeText(item.name).includes(searchNorm)) return false;
-        return true;
-      });
-
-      // Ordenação
-      const col = state.ddSortCol;
-      const dir = state.ddSortDir === 'asc' ? 1 : -1;
-      filtered.sort((a, b) => {
-        if (col === 'name' || col === 'branch') {
-          return a[col].localeCompare(b[col]) * dir;
-        }
-        return (a[col] - b[col]) * dir;
-      });
-
-      document.getElementById('ddSummaryPill').textContent = isAccumulated
-        ? `Acumulado de ${daysMultiplier} dias preenchidos • ${filtered.length} vendedores`
-        : `Data selecionada: ${state.ddDate} • ${filtered.length} vendedores`;
-
-      const tbody = document.getElementById('ddRankingBody');
-      const tfoot = document.getElementById('ddRankingFoot');
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="8" class="px-4 py-8 text-center text-slate-500">
-              Nenhum vendedor encontrado com os filtros selecionados.
-            </td>
-          </tr>
-        `;
-        tfoot.innerHTML = '';
-        return;
-      }
-
-      let sumDailyMeta = 0;
-      let sumReal = 0;
-      let sumMetaEsp = 0;
-
-      tbody.innerHTML = filtered.map(item => {
-        sumDailyMeta += item.dailyMeta;
-        sumReal += item.realizado;
-        sumMetaEsp += item.metaEsperada;
-
-        const isHit = item.diff >= 0 && !isFutureDay;
-        const barWidth = Math.min(100, Math.max(0, item.pct));
-
-        let gapCellHtml = '';
-        if (isFutureDay) {
-          gapCellHtml = `<span class="text-slate-400 font-medium">Aguardando</span>`;
-        } else if (item.diff < 0) {
-          gapCellHtml = `
-            <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-bold text-xs">
-              Devendo ${formatBRL(Math.abs(item.diff))}
-            </span>
-          `;
-        } else {
-          gapCellHtml = `
-            <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-xs">
-              + ${formatBRL(item.diff)}
-            </span>
-          `;
-        }
-
-        return `
-          <tr onclick="openSellerModal('${item.id.replace(/'/g, "\\'")}')" class="hover:bg-blue-50/70 transition cursor-pointer">
-            <td class="px-4 py-3 font-semibold text-slate-600">${item.branch}</td>
-            <td class="px-4 py-3 font-bold text-slate-900">${item.name}</td>
-            <td class="px-4 py-3 text-right text-slate-700">${formatBRL(item.dailyMeta)}</td>
-            <td class="px-4 py-3 text-right font-bold text-slate-900">${isFutureDay ? '—' : formatBRL(item.realizado)}</td>
-            <td class="px-4 py-3 text-right text-slate-700">${isFutureDay ? '—' : formatBRL(item.metaEsperada)}</td>
-            <td class="px-4 py-3">
-              <div class="flex flex-col items-center gap-1">
-                <span class="text-xs font-extrabold ${isFutureDay ? 'text-slate-400' : isHit ? 'text-emerald-700' : 'text-rose-700'}">
-                  ${isFutureDay ? '—' : formatPct(item.pct)}
-                </span>
-                <div class="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div class="h-full rounded-full ${isHit ? 'bg-emerald-500' : 'bg-rose-500'}" style="width: ${isFutureDay ? 0 : barWidth}%"></div>
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-3 text-right">${gapCellHtml}</td>
-            <td class="px-4 py-3 text-center">
-              <button type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 text-slate-700 hover:text-white text-xs font-semibold transition cursor-pointer">
-                Ver Evolução Diária
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      const totalPct = sumMetaEsp > 0 ? (sumReal / sumMetaEsp) * 100 : 0;
-      const totalDiff = sumReal - sumMetaEsp;
-
-      tfoot.innerHTML = `
-        <tr>
-          <td class="px-4 py-3" colspan="2">TOTAL FILTRADO (${filtered.length} vendedores)</td>
-          <td class="px-4 py-3 text-right">${formatBRL(sumDailyMeta)}</td>
-          <td class="px-4 py-3 text-right">${isFutureDay ? '—' : formatBRL(sumReal)}</td>
-          <td class="px-4 py-3 text-right">${isFutureDay ? '—' : formatBRL(sumMetaEsp)}</td>
-          <td class="px-4 py-3 text-center ${totalPct >= 100 ? 'text-emerald-700' : 'text-rose-700'}">${isFutureDay ? '—' : formatPct(totalPct)}</td>
-          <td class="px-4 py-3 text-right ${totalDiff >= 0 ? 'text-emerald-700' : 'text-rose-700'}">
-            ${isFutureDay ? '—' : (totalDiff < 0 ? 'Devendo ' + formatBRL(Math.abs(totalDiff)) : '+' + formatBRL(totalDiff))}
-          </td>
-          <td class="px-4 py-3"></td>
-        </tr>
-      `;
-    }
-
-    function renderBranchCards(computedAll, isFutureDay) {
-      const container = document.getElementById('branchCardsContainer');
-      const resetBtn = document.getElementById('btnResetBranchFilter');
-
-      if (state.ddBranch !== 'ALL') {
-        resetBtn.classList.remove('hidden');
-      } else {
-        resetBtn.classList.add('hidden');
-      }
-
-      const branchList = ['ALL', ...new Set(computedAll.map(s => s.branch))];
-
-      container.innerHTML = branchList.map(branchKey => {
-        const isAll = branchKey === 'ALL';
-        const title = isAll ? 'Todas as Filiais' : branchKey;
-        const members = isAll ? computedAll : computedAll.filter(s => s.branch === branchKey);
-
-        const bReal = members.reduce((a, b) => a + b.realizado, 0);
-        const bMeta = members.reduce((a, b) => a + b.metaEsperada, 0);
-        const bDiff = bReal - bMeta;
-        const bPct = bMeta > 0 ? (bReal / bMeta) * 100 : 0;
-        const belowCount = members.filter(m => m.diff < 0).length;
-        const selected = state.ddBranch === branchKey;
-
-        return `
-          <button type="button" onclick="selectDrilldownBranch('${branchKey.replace(/'/g, "\\'")}')"
-            class="text-left p-4 rounded-2xl border transition-all cursor-pointer ${
-              selected
-                ? 'bg-blue-50/90 border-blue-500 ring-2 ring-blue-500/20 shadow-sm'
-                : 'bg-white border-slate-200 hover:border-blue-300 hover:shadow-sm'
-            }">
-            <div class="flex items-center justify-between gap-2 mb-2">
-              <span class="text-sm font-extrabold text-slate-900">${title}</span>
-              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                isFutureDay
-                  ? 'bg-slate-100 text-slate-600'
-                  : bPct >= 100
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-rose-100 text-rose-800'
-              }">
-                ${isFutureDay ? 'Futuro' : formatPct(bPct)}
-              </span>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 text-xs mb-2.5 tabular-nums">
-              <div>
-                <p class="text-[11px] text-slate-400">Realizado</p>
-                <p class="font-bold text-slate-800">${isFutureDay ? '—' : formatBRL(bReal)}</p>
-              </div>
-              <div class="text-right">
-                <p class="text-[11px] text-slate-400">${bDiff < 0 ? 'Ficou Devendo' : 'Saldo Acima'}</p>
-                <p class="font-bold ${isFutureDay ? 'text-slate-400' : bDiff < 0 ? 'text-rose-600' : 'text-emerald-600'}">
-                  ${isFutureDay ? '—' : (bDiff < 0 ? formatBRL(Math.abs(bDiff)) : '+' + formatBRL(bDiff))}
-                </p>
-              </div>
-            </div>
-
-            <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mb-2">
-              <div class="h-full rounded-full ${bPct >= 100 ? 'bg-emerald-500' : 'bg-blue-600'}" style="width: ${isFutureDay ? 0 : Math.min(100, bPct)}%"></div>
-            </div>
-
-            <div class="flex items-center justify-between text-[11px] text-slate-500">
-              <span>${members.length} vend. (${belowCount} abaixo)</span>
-              <span class="font-semibold text-blue-600">${selected ? 'Selecionado ✓' : 'Filtrar →'}</span>
-            </div>
-          </button>
-        `;
-      }).join('');
-    }
-
-    window.selectDrilldownBranch = function(branchKey) {
-      state.ddBranch = branchKey;
-      renderAll();
-    };
-
-    // =========================================================================
-    // 8. NÍVEL 3: MODAL DRILL-DOWN INDIVIDUAL DO VENDEDOR + CHART.JS
+    // 9. MODAL DRILL-DOWN INDIVIDUAL DO VENDEDOR (CHART.JS + EXTRATO)
     // =========================================================================
     window.openSellerModal = function(sellerId) {
       const seller = state.sellers.find(s => s.id === sellerId);
@@ -1480,7 +1683,9 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       const diffGeral = totalVendido - metaAcum;
       const diasBatidos = activeDates.filter(d => (seller.dailySales[d.key] || 0) >= seller.dailyMeta).length;
 
-      document.getElementById('modalSellerBranch').textContent = seller.branch;
+      document.getElementById('modalSellerBranch').textContent = seller.branchDisplay;
+      document.getElementById('modalSellerRegion').textContent =
+        seller.macroRegion === 'SUL' ? 'Região Sul' : 'Norte / Nordeste / Goiânia';
       document.getElementById('modalSellerName').textContent = seller.name;
       document.getElementById('modalMetaDiaria').textContent = formatBRL(seller.dailyMeta);
       document.getElementById('modalTotalVendido').textContent = formatBRL(totalVendido);
@@ -1496,7 +1701,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         saldoEl.className = 'text-base font-extrabold text-emerald-600 mt-0.5';
       }
 
-      // Tabela extrato dia a dia
       const tbody = document.getElementById('modalDailyTableBody');
       tbody.innerHTML = state.dates.map(d => {
         const val = seller.dailySales[d.key];
@@ -1531,7 +1735,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         `;
       }).join('');
 
-      // Gráfico Chart.js (apenas dias preenchidos)
       const ctx = document.getElementById('sellerChartCanvas').getContext('2d');
       if (state.sellerChartInstance) {
         state.sellerChartInstance.destroy();
@@ -1551,7 +1754,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
               type: 'line',
               label: 'Meta Diária',
               data: metaLineData,
-              borderColor: '#1e293b',
+              borderColor: '#0f172a',
               borderWidth: 2,
               borderDash: [6, 4],
               pointRadius: 0,
@@ -1594,62 +1797,90 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     };
 
     // =========================================================================
-    // 9. NAVEGAÇÃO ENTRE ABAS E EVENTOS
+    // 10. COPIADOR DE LINKS REGIONAIS E NAVEGAÇÃO
     // =========================================================================
+    function openLinksModal() {
+      const baseUrl = window.location.href.split('?')[0].split('#')[0];
+      document.getElementById('inputLinkSul').value = `${baseUrl}?regiao=sul`;
+      document.getElementById('inputLinkNorte').value = `${baseUrl}?regiao=norte`;
+      document.getElementById('inputLinkGeral').value = baseUrl;
+      document.getElementById('linksModal').classList.remove('hidden');
+    }
+
+    window.copyRegionalUrl = function(inputId, btnEl) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      input.select();
+      input.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        const originalText = btnEl.textContent;
+        btnEl.textContent = 'Copiado!';
+        btnEl.classList.add('bg-emerald-600');
+        setTimeout(() => {
+          btnEl.textContent = originalText;
+          btnEl.classList.remove('bg-emerald-600');
+        }, 1800);
+      } catch (e) {
+        // Fallback silencioso
+      }
+    };
+
     function switchTab(tabName) {
       state.activeTab = tabName;
-      const btnMatrix = document.getElementById('tabBtnMatrix');
       const btnDrilldown = document.getElementById('tabBtnDrilldown');
-      const viewMatrix = document.getElementById('viewMatrix');
+      const btnMatrix = document.getElementById('tabBtnMatrix');
       const viewDrilldown = document.getElementById('viewDrilldown');
+      const viewMatrix = document.getElementById('viewMatrix');
 
-      if (tabName === 'matrix') {
-        btnMatrix.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-blue-600 text-white shadow';
-        btnDrilldown.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60';
-        viewMatrix.classList.remove('hidden');
-        viewDrilldown.classList.add('hidden');
-      } else {
+      if (tabName === 'drilldown') {
         btnDrilldown.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-blue-600 text-white shadow';
         btnMatrix.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60';
         viewDrilldown.classList.remove('hidden');
         viewMatrix.classList.add('hidden');
+      } else {
+        btnMatrix.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-blue-600 text-white shadow';
+        btnDrilldown.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60';
+        viewMatrix.classList.remove('hidden');
+        viewDrilldown.classList.add('hidden');
       }
 
       renderAll();
     }
 
     function renderAll() {
-      updateHeaderAndTopKPIs();
-      if (state.activeTab === 'matrix') {
-        renderMatrixTab();
-      } else {
+      applyRegionalUIState();
+      updateKPIs();
+      if (state.activeTab === 'drilldown') {
         renderDrilldownTab();
+      } else {
+        renderMatrixTab();
       }
     }
 
     function initEvents() {
-      // Abas
-      document.getElementById('tabBtnMatrix').addEventListener('click', () => switchTab('matrix'));
       document.getElementById('tabBtnDrilldown').addEventListener('click', () => switchTab('drilldown'));
+      document.getElementById('tabBtnMatrix').addEventListener('click', () => switchTab('matrix'));
 
-      // Sincronização manual
+      // Botões de troca de região (modo Gestor Geral)
+      document.querySelectorAll('.region-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (state.lockedRegion) return;
+          state.selectedRegion = btn.getAttribute('data-region-btn');
+          state.ddBranch = 'ALL';
+          state.matrixBranch = 'ALL';
+          populateSelectOptions();
+          renderAll();
+        });
+      });
+
       document.getElementById('btnSyncNow').addEventListener('click', () => loadSpreadsheetData(true));
-
-      // Filtros Aba 1 (Matriz)
-      document.getElementById('matrixBranchFilter').addEventListener('change', (e) => {
-        state.matrixBranch = e.target.value;
-        renderAll();
-      });
-      document.getElementById('matrixSearchInput').addEventListener('input', (e) => {
-        state.matrixSearch = e.target.value;
-        renderMatrixTab();
-      });
-      document.getElementById('matrixDisplayMode').addEventListener('change', (e) => {
-        state.matrixMode = e.target.value;
-        renderMatrixTab();
+      document.getElementById('btnCopyLinks').addEventListener('click', openLinksModal);
+      document.getElementById('btnCloseLinksModal').addEventListener('click', () => {
+        document.getElementById('linksModal').classList.add('hidden');
       });
 
-      // Filtros Aba 2 (Drill-Down)
+      // Filtros Drill-Down
       document.getElementById('btnResetBranchFilter').addEventListener('click', () => {
         state.ddBranch = 'ALL';
         renderAll();
@@ -1667,7 +1898,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         renderDrilldownTab();
       });
 
-      // Ordenação das colunas na tabela Drill-Down
       document.querySelectorAll('#viewDrilldown th[data-sort]').forEach(th => {
         th.addEventListener('click', () => {
           const sortKey = th.getAttribute('data-sort');
@@ -1675,23 +1905,34 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
             state.ddSortDir = state.ddSortDir === 'asc' ? 'desc' : 'asc';
           } else {
             state.ddSortCol = sortKey;
-            state.ddSortDir = sortKey === 'name' || sortKey === 'branch' ? 'asc' : 'desc';
+            state.ddSortDir = sortKey === 'name' || sortKey === 'branchDisplay' ? 'asc' : 'desc';
           }
           renderDrilldownTab();
         });
       });
 
-      // Modal Individual do Vendedor
+      // Filtros Matriz
+      document.getElementById('matrixBranchFilter').addEventListener('change', (e) => {
+        state.matrixBranch = e.target.value;
+        renderAll();
+      });
+      document.getElementById('matrixSearchInput').addEventListener('input', (e) => {
+        state.matrixSearch = e.target.value;
+        renderMatrixTab();
+      });
+      document.getElementById('matrixDisplayMode').addEventListener('change', (e) => {
+        state.matrixMode = e.target.value;
+        renderMatrixTab();
+      });
+
+      // Modais
       document.getElementById('btnCloseSellerModal').addEventListener('click', () => {
         document.getElementById('sellerModal').classList.add('hidden');
       });
       document.getElementById('sellerModal').addEventListener('click', (e) => {
-        if (e.target.id === 'sellerModal') {
-          document.getElementById('sellerModal').classList.add('hidden');
-        }
+        if (e.target.id === 'sellerModal') document.getElementById('sellerModal').classList.add('hidden');
       });
 
-      // Modal de Configuração
       document.getElementById('btnOpenConfig').addEventListener('click', () => {
         document.getElementById('inputSheetUrl').value = state.sheetUrl;
         document.getElementById('configModal').classList.remove('hidden');
@@ -1718,17 +1959,16 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
           const parsed = parseSalesMatrix(rawPasted);
           state.dates = parsed.dates;
           state.sellers = parsed.sellers;
-          populateFilterSelects();
+          populateSelectOptions();
           renderAll();
-          updateSyncBadge('ok', 'Dados colados carregados com sucesso');
+          updateSyncBadge('ok', 'Dados colados carregados');
           document.getElementById('configModal').classList.add('hidden');
         } catch (err) {
-          updateSyncBadge('offline', 'Erro ao ler texto colado: ' + err.message);
+          updateSyncBadge('offline', 'Erro ao ler dados: ' + err.message);
         }
       });
     }
 
-    // Inicialização ao carregar a página + Auto-Refresh a cada 60 segundos
     window.addEventListener('DOMContentLoaded', () => {
       initEvents();
       loadSpreadsheetData(false);
