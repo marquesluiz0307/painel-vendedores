@@ -174,6 +174,13 @@
             </svg>
             <span>Visão Geral Diária (Matriz)</span>
           </button>
+
+          <button id="tabBtnBranchGoals" type="button" class="hidden inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+            </svg>
+            <span>Metas por Filial (Gestor)</span>
+          </button>
         </div>
 
         <!-- Seletor de Macro-Região (Ocultado automaticamente quando ?regiao=sul ou ?regiao=norte estiver ativo na URL) -->
@@ -398,6 +405,53 @@
         </div>
       </section>
     </div>
+
+    <!-- ABA 3: CONFIGURAÇÃO DE METAS POR FILIAL (EXCLUSIVA DO GESTOR GERAL) -->
+    <div id="viewBranchGoals" class="hidden space-y-5">
+      <section class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-slate-200">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">Exclusivo Gestor Geral</span>
+              <h2 class="text-base sm:text-lg font-extrabold text-slate-900">Ajuste de Meta Diária por Filial</h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+              Defina uma meta diária oficial para cada filial (ex.: Curitiba <strong>R$ 170.000,00</strong> ou Goiânia <strong>R$ 90.000,00</strong>). Quando preenchida, substitui a soma automática dos vendedores nos KPIs e nos cards de filial. Deixe em branco para usar a soma padrão da planilha.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button id="btnResetBranchGoals" type="button" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition cursor-pointer">
+              Restaurar Soma da Planilha
+            </button>
+            <button id="btnSaveBranchGoals" type="button" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow transition cursor-pointer">
+              Salvar Metas das Filiais
+            </button>
+          </div>
+        </div>
+
+        <div id="branchGoalsFeedback" class="hidden mt-4 px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+          Metas personalizadas por filial salvas e aplicadas em todo o painel!
+        </div>
+
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full border-collapse text-xs sm:text-sm tabular-nums">
+            <thead class="bg-slate-900 text-white text-left">
+              <tr>
+                <th class="px-4 py-3 font-bold">Macro-Região</th>
+                <th class="px-4 py-3 font-bold">Filial / Praça</th>
+                <th class="px-4 py-3 font-bold text-center">Equipe</th>
+                <th class="px-4 py-3 font-bold text-right">Soma da Planilha (Dia)</th>
+                <th class="px-4 py-3 font-bold text-right">Meta Oficial Definida (Dia)</th>
+                <th class="px-4 py-3 font-bold text-right">Diferença / Ajuste</th>
+                <th class="px-4 py-3 font-bold text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="branchGoalsTableBody" class="divide-y divide-slate-200"></tbody>
+            <tfoot id="branchGoalsTableFoot" class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300"></tfoot>
+          </table>
+        </div>
+      </section>
+    </div>
   </main>
 
   <!-- ======================================================================= -->
@@ -606,12 +660,21 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     // =========================================================================
     const MANAGER_PASSWORD = 'gestor2026';
 
+    function loadSavedBranchGoalOverrides() {
+      try {
+        const raw = localStorage.getItem('painel_vendedores_branch_goals');
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
     function getLockedRegionFromUrl() {
       const params = new URLSearchParams(window.location.search);
-      const raw = (params.get('regiao') || '').trim().toLowerCase();
-      if (raw === 'sul') return 'SUL';
-      if (raw === 'norte' || raw === 'nordeste' || raw === 'goiania' || raw === 'norte-nordeste') return 'NORTE';
-      return null; // Modo Gestor Geral (sem trava na URL)
+      const raw = (params.get('regiao') || params.get('region') || '').trim().toLowerCase();
+      if (raw === 'sul' || raw === 's') return 'SUL';
+      if (raw === 'norte' || raw === 'nordeste' || raw === 'norte-nordeste' || raw === 'goiania' || raw === 'ne') return 'NORTE';
+      return null;
     }
 
     const LOCKED_REGION = getLockedRegionFromUrl();
@@ -625,11 +688,12 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     // =========================================================================
     const state = {
       sheetUrl: localStorage.getItem('painel_vendedores_csv_url') || DEFAULT_GOOGLE_SHEET_CSV_URL,
-      activeTab: 'drilldown', // 'drilldown' | 'matrix'
+      activeTab: 'drilldown', // 'drilldown' | 'matrix' | 'branchGoals'
       lockedRegion: LOCKED_REGION,
       selectedRegion: LOCKED_REGION || 'ALL', // 'ALL' | 'SUL' | 'NORTE'
       dates: [],
       sellers: [],
+      branchGoalOverrides: loadSavedBranchGoalOverrides(), // { 'Filial 2': 170000, ... }
       // Filtros Drill-Down
       ddBranch: 'ALL',
       ddDate: 'ACCUMULATED',
@@ -667,23 +731,16 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         .trim();
     }
 
-    /**
-     * Classifica automaticamente cada vendedor/filial entre:
-     * - 'SUL': -LDA (Londrina), -CTB (Curitiba), -JOI (Joinville), -POA (Porto Alegre) ou Filiais 1, 2, 4
-     * - 'NORTE': Demais filiais (Goiânia, Norte e Nordeste)
-     */
     function classifyMacroRegion(sellerName, branchRaw) {
       const upperName = String(sellerName || '').toUpperCase().trim();
       const upperBranch = String(branchRaw || '').toUpperCase().trim();
       const combined = `${upperName} ${upperBranch}`;
 
-      // Verifica filiais numéricas conhecidas da Região Sul (1=LDA, 2=CTB, 4=JOI)
       const branchNum = upperBranch.replace(/\D/g, '');
       if (branchNum === '1' || branchNum === '2' || branchNum === '4') {
         return 'SUL';
       }
 
-      // Verifica siglas de cidades do Sul no nome do vendedor (ex: ADEMAR REP-LDA, MARCELO-POA)
       const sulTokens = ['LDA', 'CTB', 'JOI', 'POA'];
       const hasSulSuffix = sulTokens.some(sigla => {
         const regex = new RegExp(`(?:^|[-\\s/\\(])${sigla}(?:$|[-\\s/\\)])`);
@@ -716,10 +773,6 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       return { code: '', label: '' };
     }
 
-    /**
-     * Converte strings monetárias brasileiras e retorna null para células vazias
-     * ou qualquer erro de fórmula PROCV (#N/D, #N/A, #VALOR!, #REF!, #DIV/0!, ERRO).
-     */
     function parseBrazilianNumber(raw) {
       if (raw === null || raw === undefined) return null;
       if (typeof raw === 'number') return isNaN(raw) ? null : raw;
@@ -946,7 +999,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
           branchRaw: branchCode,
           branchDisplay,
           cityLabel: cityInfo.label,
-          macroRegion, // 'SUL' | 'NORTE'
+          macroRegion,
           name: sellerName,
           dailyMeta,
           dailySales
@@ -1074,6 +1127,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       const switcherWrapper = document.getElementById('regionSwitcherWrapper');
       const btnCopyLinks = document.getElementById('btnCopyLinks');
       const btnOpenConfig = document.getElementById('btnOpenConfig');
+      const btnBranchGoals = document.getElementById('tabBtnBranchGoals');
       const authOverlay = document.getElementById('managerAuthOverlay');
 
       if (state.lockedRegion === 'SUL') {
@@ -1082,6 +1136,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         switcherWrapper.classList.add('hidden');
         btnCopyLinks.classList.add('hidden');
         btnOpenConfig.classList.add('hidden');
+        btnBranchGoals?.classList.add('hidden');
         authOverlay.classList.add('hidden');
       } else if (state.lockedRegion === 'NORTE') {
         badge.textContent = 'Região Norte / Nordeste / Goiânia';
@@ -1089,6 +1144,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         switcherWrapper.classList.add('hidden');
         btnCopyLinks.classList.add('hidden');
         btnOpenConfig.classList.add('hidden');
+        btnBranchGoals?.classList.add('hidden');
         authOverlay.classList.add('hidden');
       } else {
         // Acesso Raiz (Gestor Geral) — exige autenticação por senha
@@ -1097,6 +1153,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
           switcherWrapper.classList.add('hidden');
           btnCopyLinks.classList.add('hidden');
           btnOpenConfig.classList.add('hidden');
+          btnBranchGoals?.classList.add('hidden');
           return;
         }
 
@@ -1104,6 +1161,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         switcherWrapper.classList.remove('hidden');
         btnCopyLinks.classList.remove('hidden');
         btnOpenConfig.classList.remove('hidden');
+        btnBranchGoals?.classList.remove('hidden');
 
         if (state.selectedRegion === 'SUL') {
           badge.textContent = 'Filtro Ativo: Região Sul (LDA • CTB • JOI • POA)';
@@ -1205,10 +1263,25 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       let sumDevendo = 0;
       let countOnTarget = 0;
 
+      // Calcula a meta efetiva considerando overrides oficiais por filial (quando definidos pelo gestor)
+      const branchGroups = new Map();
+      scopedSellers.forEach(s => {
+        if (!branchGroups.has(s.branchKey)) branchGroups.set(s.branchKey, []);
+        branchGroups.get(s.branchKey).push(s);
+      });
+
+      branchGroups.forEach((members, branchKey) => {
+        const defaultBranchDaily = members.reduce((acc, m) => acc + m.dailyMeta, 0);
+        const overrideDaily = state.branchGoalOverrides[branchKey];
+        const effectiveDaily = overrideDaily !== undefined && overrideDaily !== null && overrideDaily > 0
+          ? overrideDaily
+          : defaultBranchDaily;
+        sumMeta += effectiveDaily * daysCount;
+      });
+
       scopedSellers.forEach(s => {
         const sMeta = s.dailyMeta * daysCount;
         const sReal = targetDateKeys.reduce((acc, dk) => acc + (s.dailySales[dk] || 0), 0);
-        sumMeta += sMeta;
         sumReal += sReal;
         if (daysCount > 0) {
           if (sReal < sMeta) {
@@ -1279,8 +1352,19 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     }
 
     // =========================================================================
-    // 7. RENDERIZAÇÃO ABA DRILL-DOWN & META
+    // 7. RENDERIZAÇÃO ABA 1: ACOMPANHAMENTO DRILL-DOWN & META
     // =========================================================================
+    function getEffectiveBranchDailyMeta(branchKey, members) {
+      const sumSellers = members.reduce((acc, m) => acc + m.dailyMeta, 0);
+      const override = state.branchGoalOverrides[branchKey];
+      const hasOverride = override !== undefined && override !== null && !isNaN(override) && override > 0;
+      return {
+        dailyMeta: hasOverride ? override : sumSellers,
+        sumSellers,
+        hasOverride
+      };
+    }
+
     function renderDrilldownTab() {
       const regSellers = getRegionalSellers();
       const activeDates = state.dates.filter(d => d.isActive);
@@ -1309,18 +1393,14 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         };
       });
 
-      renderBranchCards(computedAll, isFutureDay);
+      renderBranchCards(computedAll, daysMultiplier, isFutureDay);
 
       const searchNorm = normalizeText(state.ddSearch);
       let filtered = computedAll.filter(item => {
         if (state.ddBranch !== 'ALL' && item.branchKey !== state.ddBranch) return false;
         if (state.ddStatus === 'DEVENDO' && item.diff >= 0) return false;
         if (state.ddStatus === 'BATIDA' && item.diff < 0) return false;
-        if (
-          searchNorm &&
-          !normalizeText(item.name).includes(searchNorm) &&
-          !normalizeText(item.branchDisplay).includes(searchNorm)
-        ) {
+        if (searchNorm && !normalizeText(item.name).includes(searchNorm) && !normalizeText(item.branchDisplay).includes(searchNorm)) {
           return false;
         }
         return true;
@@ -1337,7 +1417,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
       document.getElementById('ddSummaryPill').textContent = isAccumulated
         ? `Acumulado (${daysMultiplier} dias preenchidos) • ${filtered.length} vendedores`
-        : `Dia ${state.ddDate} • ${filtered.length} vendedores`;
+        : `Data: ${state.ddDate} • ${filtered.length} vendedores`;
 
       const tbody = document.getElementById('ddRankingBody');
       const tfoot = document.getElementById('ddRankingFoot');
@@ -1346,7 +1426,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         tbody.innerHTML = `
           <tr>
             <td colspan="8" class="px-4 py-8 text-center text-slate-500">
-              Nenhum vendedor encontrado com os filtros aplicados.
+              Nenhum vendedor encontrado com os filtros selecionados.
             </td>
           </tr>
         `;
@@ -1385,8 +1465,8 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
         return `
           <tr onclick="openSellerModal('${item.id.replace(/'/g, "\\'")}')" class="hover:bg-blue-50/70 transition cursor-pointer">
-            <td class="px-4 py-3 font-semibold text-slate-600 whitespace-nowrap">${item.branchDisplay}</td>
-            <td class="px-4 py-3 font-bold text-slate-900 whitespace-nowrap">${item.name}</td>
+            <td class="px-4 py-3 font-semibold text-slate-600">${item.branchDisplay}</td>
+            <td class="px-4 py-3 font-bold text-slate-900">${item.name}</td>
             <td class="px-4 py-3 text-right text-slate-700">${formatBRL(item.dailyMeta)}</td>
             <td class="px-4 py-3 text-right text-slate-700">${isFutureDay ? '—' : formatBRL(item.metaEsperada)}</td>
             <td class="px-4 py-3 text-right font-bold text-slate-900">${isFutureDay ? '—' : formatBRL(item.realizado)}</td>
@@ -1400,10 +1480,10 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
                 </div>
               </div>
             </td>
-            <td class="px-4 py-3 text-right whitespace-nowrap">${gapCellHtml}</td>
-            <td class="px-4 py-3 text-center whitespace-nowrap">
+            <td class="px-4 py-3 text-right">${gapCellHtml}</td>
+            <td class="px-4 py-3 text-center">
               <button type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-600 text-slate-700 hover:text-white text-xs font-semibold transition cursor-pointer">
-                Ver Diário
+                Evolução
               </button>
             </td>
           </tr>
@@ -1428,7 +1508,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       `;
     }
 
-    function renderBranchCards(computedAll, isFutureDay) {
+    function renderBranchCards(computedAll, daysMultiplier, isFutureDay) {
       const container = document.getElementById('branchCardsContainer');
       const resetBtn = document.getElementById('btnResetBranchFilter');
 
@@ -1438,40 +1518,55 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         resetBtn.classList.add('hidden');
       }
 
-      // Agrupa filiais únicas dentro da região selecionada
-      const branchGroups = [{ key: 'ALL', label: 'Todas as Filiais da Região' }];
-      const seenKeys = new Set(['ALL']);
+      const branchMap = new Map();
       computedAll.forEach(s => {
-        if (!seenKeys.has(s.branchKey)) {
-          seenKeys.add(s.branchKey);
-          branchGroups.push({ key: s.branchKey, label: s.branchDisplay });
+        if (!branchMap.has(s.branchKey)) {
+          branchMap.set(s.branchKey, s.branchDisplay);
         }
       });
 
-      if (!seenKeys.has(state.ddBranch)) {
-        state.ddBranch = 'ALL';
-      }
+      const cardsData = [{ key: 'ALL', title: 'Todas as Filiais da Região' }];
+      branchMap.forEach((display, key) => {
+        cardsData.push({ key, title: display });
+      });
 
-      container.innerHTML = branchGroups.map(bg => {
-        const isAll = bg.key === 'ALL';
-        const members = isAll ? computedAll : computedAll.filter(s => s.branchKey === bg.key);
+      container.innerHTML = cardsData.map(card => {
+        const isAll = card.key === 'ALL';
+        const members = isAll ? computedAll : computedAll.filter(s => s.branchKey === card.key);
+
+        let bMeta = 0;
+        let hasAnyOverride = false;
+        if (isAll) {
+          branchMap.forEach((_, bKey) => {
+            const bMembers = computedAll.filter(s => s.branchKey === bKey);
+            const eff = getEffectiveBranchDailyMeta(bKey, bMembers);
+            bMeta += eff.dailyMeta * daysMultiplier;
+            if (eff.hasOverride) hasAnyOverride = true;
+          });
+        } else {
+          const eff = getEffectiveBranchDailyMeta(card.key, members);
+          bMeta = eff.dailyMeta * daysMultiplier;
+          hasAnyOverride = eff.hasOverride;
+        }
 
         const bReal = members.reduce((a, b) => a + b.realizado, 0);
-        const bMeta = members.reduce((a, b) => a + b.metaEsperada, 0);
         const bDiff = bReal - bMeta;
         const bPct = bMeta > 0 ? (bReal / bMeta) * 100 : 0;
         const belowCount = members.filter(m => m.diff < 0).length;
-        const selected = state.ddBranch === bg.key;
+        const selected = state.ddBranch === card.key;
 
         return `
-          <button type="button" onclick="selectDrilldownBranch('${bg.key.replace(/'/g, "\\'")}')"
+          <button type="button" onclick="selectDrilldownBranch('${card.key.replace(/'/g, "\\'")}')"
             class="text-left p-4 rounded-2xl border transition-all cursor-pointer ${
               selected
                 ? 'bg-blue-50/90 border-blue-500 ring-2 ring-blue-500/20 shadow-sm'
                 : 'bg-white border-slate-200 hover:border-blue-300 hover:shadow-sm'
             }">
             <div class="flex items-start justify-between gap-2 mb-2">
-              <span class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug">${bg.label}</span>
+              <div>
+                <span class="text-xs sm:text-sm font-extrabold text-slate-900 line-clamp-1">${card.title}</span>
+                ${hasAnyOverride ? '<span class="inline-block text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded mt-0.5">Meta Oficial Ajustada</span>' : ''}
+              </div>
               <span class="px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 ${
                 isFutureDay
                   ? 'bg-slate-100 text-slate-600'
@@ -1515,7 +1610,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     };
 
     // =========================================================================
-    // 8. RENDERIZAÇÃO ABA MATRIZ DIÁRIA (VISÃO GERAL)
+    // 8. RENDERIZAÇÃO ABA 2: VISÃO GERAL DIÁRIA (MATRIZ)
     // =========================================================================
     function renderMatrixTab() {
       const thead = document.getElementById('matrixTableHead');
@@ -1526,11 +1621,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       const searchNorm = normalizeText(state.matrixSearch);
       const filteredSellers = regSellers.filter(s => {
         if (state.matrixBranch !== 'ALL' && s.branchKey !== state.matrixBranch) return false;
-        if (
-          searchNorm &&
-          !normalizeText(s.name).includes(searchNorm) &&
-          !normalizeText(s.branchDisplay).includes(searchNorm)
-        ) {
+        if (searchNorm && !normalizeText(s.name).includes(searchNorm) && !normalizeText(s.branchDisplay).includes(searchNorm)) {
           return false;
         }
         return true;
@@ -1540,9 +1631,9 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
       const weekGroups = [];
       state.dates.forEach(d => {
-        const last = weekGroups[weekGroups.length - 1];
-        if (last && last.week === d.week) {
-          last.count += 1;
+        const lastGroup = weekGroups[weekGroups.length - 1];
+        if (lastGroup && lastGroup.week === d.week) {
+          lastGroup.count += 1;
         } else {
           weekGroups.push({ week: d.week, count: 1 });
         }
@@ -1561,7 +1652,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       });
 
       headRow1 += `
-          <th colspan="4" class="bg-slate-950 text-amber-300 px-3 py-1.5 text-center font-extrabold">ACUMULADO (DIAS PREENCHIDOS)</th>
+          <th colspan="4" class="bg-slate-950 text-amber-300 px-3 py-1.5 text-center font-extrabold">CONSOLIDADO (DIAS ATIVOS)</th>
         </tr>
       `;
 
@@ -1569,7 +1660,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         <tr class="bg-slate-800 text-white text-xs">
           <th class="sticky-col-1 bg-slate-800 px-2 py-2.5 text-center font-bold border-r border-slate-700 w-[68px] min-w-[68px]">Filial</th>
           <th class="sticky-col-2 bg-slate-800 px-3 py-2.5 text-left font-bold border-r border-slate-700 w-[180px] min-w-[180px]">Vendedor</th>
-          <th class="sticky-col-3 bg-slate-800 px-3 py-2.5 text-right font-bold border-r border-slate-600 w-[115px] min-w-[115px]">Meta Diária</th>
+          <th class="sticky-col-3 bg-slate-800 px-3 py-2.5 text-right font-bold border-r border-slate-600 w-[115px] min-w-[115px]">META DIÁRIA</th>
       `;
 
       state.dates.forEach(d => {
@@ -1583,8 +1674,8 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       });
 
       headRow2 += `
-          <th class="px-3 py-2.5 text-right font-bold bg-slate-900 border-r border-slate-700 min-w-[120px] whitespace-nowrap">Realizado</th>
-          <th class="px-3 py-2.5 text-right font-bold bg-slate-900 border-r border-slate-700 min-w-[120px] whitespace-nowrap">Meta Acum.</th>
+          <th class="px-3 py-2.5 text-right font-bold bg-slate-900 border-r border-slate-700 min-w-[120px] whitespace-nowrap">Total Realizado</th>
+          <th class="px-3 py-2.5 text-right font-bold bg-slate-900 border-r border-slate-700 min-w-[120px] whitespace-nowrap">Meta Acumulada</th>
           <th class="px-3 py-2.5 text-center font-bold bg-slate-900 border-r border-slate-700 min-w-[90px] whitespace-nowrap">% Ating.</th>
           <th class="px-3 py-2.5 text-right font-bold bg-slate-900 min-w-[125px] whitespace-nowrap">Ficou Devendo</th>
         </tr>
@@ -1644,7 +1735,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         return `
           <tr onclick="openSellerModal('${s.id.replace(/'/g, "\\'")}')" class="hover:brightness-95 transition cursor-pointer group">
             <td class="sticky-col-1 bg-white group-hover:bg-blue-50 px-2 py-2 text-center font-semibold text-slate-700 border-r border-slate-200">${s.branchRaw}</td>
-            <td class="sticky-col-2 bg-white group-hover:bg-blue-50 px-3 py-2 text-left font-bold text-slate-900 border-r border-slate-200 truncate max-w-[180px]" title="${s.branchDisplay}">${s.name}</td>
+            <td class="sticky-col-2 bg-white group-hover:bg-blue-50 px-3 py-2 text-left font-bold text-slate-900 border-r border-slate-200 truncate max-w-[180px]" title="${s.name}">${s.name}</td>
             <td class="sticky-col-3 bg-slate-50 group-hover:bg-blue-50 px-3 py-2 text-right font-semibold text-slate-800 border-r border-slate-300">${formatBRL(s.dailyMeta)}</td>
             ${dayCellsHtml}
             <td class="px-3 py-2 text-right font-bold text-slate-900 bg-slate-50 border-r border-slate-200 whitespace-nowrap">${formatBRL(sellerTotalReal)}</td>
@@ -1691,7 +1782,128 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     }
 
     // =========================================================================
-    // 9. MODAL DRILL-DOWN INDIVIDUAL DO VENDEDOR (CHART.JS + EXTRATO)
+    // 9. ABA 3: GESTÃO DE METAS POR FILIAL (EXCLUSIVA GESTOR GERAL)
+    // =========================================================================
+    function renderBranchGoalsTab() {
+      const tbody = document.getElementById('branchGoalsTableBody');
+      const tfoot = document.getElementById('branchGoalsTableFoot');
+      if (!tbody || !tfoot) return;
+
+      const branchMap = new Map();
+      state.sellers.forEach(s => {
+        if (!branchMap.has(s.branchKey)) {
+          branchMap.set(s.branchKey, {
+            branchKey: s.branchKey,
+            branchDisplay: s.branchDisplay,
+            macroRegion: s.macroRegion,
+            members: []
+          });
+        }
+        branchMap.get(s.branchKey).members.push(s);
+      });
+
+      const branches = Array.from(branchMap.values());
+      let sumSheetTotal = 0;
+      let sumEffectiveTotal = 0;
+
+      tbody.innerHTML = branches.map(b => {
+        const eff = getEffectiveBranchDailyMeta(b.branchKey, b.members);
+        sumSheetTotal += eff.sumSellers;
+        sumEffectiveTotal += eff.dailyMeta;
+
+        const diff = eff.dailyMeta - eff.sumSellers;
+        const overrideVal = eff.hasOverride ? eff.dailyMeta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+
+        const regionBadge = b.macroRegion === 'SUL'
+          ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">Região Sul</span>'
+          : '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">Norte / NE / GO</span>';
+
+        const diffHtml = !eff.hasOverride
+          ? '<span class="text-slate-400">R$ 0,00</span>'
+          : diff >= 0
+            ? `<span class="text-blue-700 font-bold">+ ${formatBRL(diff)}</span>`
+            : `<span class="text-amber-700 font-bold">- ${formatBRL(Math.abs(diff))}</span>`;
+
+        const statusHtml = eff.hasOverride
+          ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800">Meta Oficial Ativa</span>'
+          : '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600">Soma Planilha</span>';
+
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="px-4 py-3">${regionBadge}</td>
+            <td class="px-4 py-3 font-bold text-slate-900">${b.branchDisplay}</td>
+            <td class="px-4 py-3 text-center text-slate-600">${b.members.length} vend.</td>
+            <td class="px-4 py-3 text-right text-slate-600 font-medium">${formatBRL(eff.sumSellers)}</td>
+            <td class="px-4 py-3 text-right">
+              <div class="inline-flex items-center gap-1.5">
+                <span class="text-xs font-bold text-slate-400">R$</span>
+                <input
+                  type="text"
+                  data-branch-goal-input="${b.branchKey}"
+                  value="${overrideVal}"
+                  placeholder="${eff.sumSellers.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}"
+                  class="w-36 px-3 py-1.5 rounded-xl border border-slate-300 text-right text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </td>
+            <td class="px-4 py-3 text-right">${diffHtml}</td>
+            <td class="px-4 py-3 text-center">${statusHtml}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalDiff = sumEffectiveTotal - sumSheetTotal;
+      tfoot.innerHTML = `
+        <tr>
+          <td class="px-4 py-3" colspan="3">TOTAL DIÁRIO CONSOLIDADO (${branches.length} filiais)</td>
+          <td class="px-4 py-3 text-right">${formatBRL(sumSheetTotal)}</td>
+          <td class="px-4 py-3 text-right text-blue-700">${formatBRL(sumEffectiveTotal)}</td>
+          <td class="px-4 py-3 text-right">${totalDiff === 0 ? 'R$ 0,00' : (totalDiff > 0 ? '+' + formatBRL(totalDiff) : '-' + formatBRL(Math.abs(totalDiff)))}</td>
+          <td class="px-4 py-3"></td>
+        </tr>
+      `;
+    }
+
+    function saveBranchGoalsFromInputs() {
+      const inputs = document.querySelectorAll('input[data-branch-goal-input]');
+      const nextOverrides = {};
+
+      inputs.forEach(input => {
+        const branchKey = input.getAttribute('data-branch-goal-input');
+        const parsed = parseBrazilianNumber(input.value);
+        if (parsed !== null && parsed > 0) {
+          nextOverrides[branchKey] = parsed;
+        }
+      });
+
+      state.branchGoalOverrides = nextOverrides;
+      try {
+        localStorage.setItem('painel_vendedores_branch_goals', JSON.stringify(nextOverrides));
+      } catch (e) {
+        // Ignora erro de quota
+      }
+
+      const feedback = document.getElementById('branchGoalsFeedback');
+      if (feedback) {
+        feedback.classList.remove('hidden');
+        setTimeout(() => feedback.classList.add('hidden'), 3200);
+      }
+
+      renderAll();
+    }
+
+    function resetAllBranchGoals() {
+      state.branchGoalOverrides = {};
+      try {
+        localStorage.removeItem('painel_vendedores_branch_goals');
+      } catch (e) {
+        // Ignora
+      }
+      renderAll();
+    }
+
+    // =========================================================================
+    // 10. MODAL DRILL-DOWN INDIVIDUAL DO VENDEDOR + CHART.JS
     // =========================================================================
     window.openSellerModal = function(sellerId) {
       const seller = state.sellers.find(s => s.id === sellerId);
@@ -1775,7 +1987,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
               type: 'line',
               label: 'Meta Diária',
               data: metaLineData,
-              borderColor: '#0f172a',
+              borderColor: '#1e293b',
               borderWidth: 2,
               borderDash: [6, 4],
               pointRadius: 0,
@@ -1818,7 +2030,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     };
 
     // =========================================================================
-    // 10. COPIADOR DE LINKS REGIONAIS E NAVEGAÇÃO
+    // 11. COPIADOR DE LINKS REGIONAIS E NAVEGAÇÃO
     // =========================================================================
     function openLinksModal() {
       if (state.lockedRegion || !isManagerAuthenticated()) return;
@@ -1849,22 +2061,31 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     };
 
     function switchTab(tabName) {
+      if (tabName === 'branchGoals' && (state.lockedRegion || !isManagerAuthenticated())) {
+        tabName = 'drilldown';
+      }
+
       state.activeTab = tabName;
       const btnDrilldown = document.getElementById('tabBtnDrilldown');
       const btnMatrix = document.getElementById('tabBtnMatrix');
+      const btnBranchGoals = document.getElementById('tabBtnBranchGoals');
       const viewDrilldown = document.getElementById('viewDrilldown');
       const viewMatrix = document.getElementById('viewMatrix');
+      const viewBranchGoals = document.getElementById('viewBranchGoals');
 
-      if (tabName === 'drilldown') {
-        btnDrilldown.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-blue-600 text-white shadow';
-        btnMatrix.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60';
-        viewDrilldown.classList.remove('hidden');
-        viewMatrix.classList.add('hidden');
-      } else {
-        btnMatrix.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-blue-600 text-white shadow';
-        btnDrilldown.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60';
-        viewMatrix.classList.remove('hidden');
-        viewDrilldown.classList.add('hidden');
+      const activeClass = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer bg-blue-600 text-white shadow';
+      const inactiveClass = 'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition cursor-pointer text-slate-300 hover:text-white hover:bg-slate-700/60';
+
+      btnDrilldown.className = tabName === 'drilldown' ? activeClass : inactiveClass;
+      btnMatrix.className = tabName === 'matrix' ? activeClass : inactiveClass;
+      if (btnBranchGoals) {
+        btnBranchGoals.className = `${state.lockedRegion || !isManagerAuthenticated() ? 'hidden ' : ''}${tabName === 'branchGoals' ? activeClass : inactiveClass}`;
+      }
+
+      viewDrilldown.classList.toggle('hidden', tabName !== 'drilldown');
+      viewMatrix.classList.toggle('hidden', tabName !== 'matrix');
+      if (viewBranchGoals) {
+        viewBranchGoals.classList.toggle('hidden', tabName !== 'branchGoals');
       }
 
       renderAll();
@@ -1875,14 +2096,19 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       updateKPIs();
       if (state.activeTab === 'drilldown') {
         renderDrilldownTab();
-      } else {
+      } else if (state.activeTab === 'matrix') {
         renderMatrixTab();
+      } else if (state.activeTab === 'branchGoals') {
+        renderBranchGoalsTab();
       }
     }
 
     function initEvents() {
       document.getElementById('tabBtnDrilldown').addEventListener('click', () => switchTab('drilldown'));
       document.getElementById('tabBtnMatrix').addEventListener('click', () => switchTab('matrix'));
+      document.getElementById('tabBtnBranchGoals')?.addEventListener('click', () => switchTab('branchGoals'));
+      document.getElementById('btnSaveBranchGoals')?.addEventListener('click', saveBranchGoalsFromInputs);
+      document.getElementById('btnResetBranchGoals')?.addEventListener('click', resetAllBranchGoals);
 
       // Autenticação Gestor Geral na URL raiz
       const loginForm = document.getElementById('managerLoginForm');
