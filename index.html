@@ -133,7 +133,7 @@
             <span id="syncStatusText" class="text-slate-200 font-medium">Conectando ao Google Sheets...</span>
           </div>
 
-          <button id="btnCopyLinks" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer">
+          <button id="btnCopyLinks" type="button" class="hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer">
             <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
             </svg>
@@ -147,7 +147,7 @@
             <span>Sincronizar Agora</span>
           </button>
 
-          <button id="btnOpenConfig" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer" title="Configurar Planilha">
+          <button id="btnOpenConfig" type="button" class="hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer" title="Configurar Planilha">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -177,7 +177,7 @@
         </div>
 
         <!-- Seletor de Macro-Região (Ocultado automaticamente quando ?regiao=sul ou ?regiao=norte estiver ativo na URL) -->
-        <div id="regionSwitcherWrapper" class="flex flex-wrap items-center gap-1.5 bg-slate-800/90 p-1 rounded-xl border border-slate-700 self-start">
+        <div id="regionSwitcherWrapper" class="hidden flex flex-wrap items-center gap-1.5 bg-slate-800/90 p-1 rounded-xl border border-slate-700 self-start">
           <button type="button" data-region-btn="ALL" class="region-btn px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer bg-slate-700 text-white">
             Todas as Regiões
           </button>
@@ -193,30 +193,55 @@
   </header>
 
   <!-- ======================================================================= -->
+  <!-- TELA DE BLOQUEIO PARA GESTOR GERAL (QUANDO NÃO HÁ ?regiao= NA URL)      -->
+  <!-- ======================================================================= -->
+  <div id="managerAuthOverlay" class="fixed inset-0 z-50 hidden bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 sm:p-8 text-center">
+      <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        </svg>
+      </div>
+      <h2 class="text-xl font-extrabold text-slate-900">Acesso Restrito — Gestor Geral</h2>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1.5">
+        A visualização consolidada de todas as regiões é protegida. Insira a senha administrativa para continuar ou acesse através do link específico da sua região.
+      </p>
+      <form id="managerLoginForm" class="mt-5 space-y-3 text-left">
+        <div>
+          <label for="managerPasswordInput" class="block text-xs font-bold uppercase text-slate-500 mb-1">Senha de Acesso</label>
+          <input id="managerPasswordInput" type="password" placeholder="Digite a senha do gestor..." required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <p id="managerAuthError" class="text-xs font-semibold text-rose-600 mt-1.5 hidden">Senha incorreta. Tente novamente.</p>
+        </div>
+        <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold shadow transition cursor-pointer">
+          Desbloquear Painel Geral
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
   <!-- CONTEÚDO PRINCIPAL                                                      -->
   <!-- ======================================================================= -->
   <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
 
-    <!-- 5 CARDS DE KPIs EXECUTIVOS -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-      <!-- KPI 1: Meta do Período -->
+    <!-- 4 CARDS DE KPIs -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Meta do Período</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Meta do Período</span>
           <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M9 17V9m4 8V5m4 12v-4" />
             </svg>
           </span>
         </div>
         <p id="kpiMeta" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">R$ 0,00</p>
-        <p id="kpiMetaSub" class="text-[11px] text-slate-500 mt-1">Proporcional aos dias ativos</p>
+        <p id="kpiMetaSub" class="text-xs text-slate-500 mt-1">Aguardando dados...</p>
       </div>
 
-      <!-- KPI 2: Realizado -->
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Realizado</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Realizado</span>
           <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -224,35 +249,32 @@
           </span>
         </div>
         <p id="kpiRealizado" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">R$ 0,00</p>
-        <p id="kpiRealizadoSub" class="text-[11px] text-slate-500 mt-1">Vendas contabilizadas</p>
+        <p id="kpiRealizadoSub" class="text-xs text-slate-500 mt-1">Vendas acumuladas</p>
       </div>
 
-      <!-- KPI 3: % Atingimento Geral -->
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">% Atingimento</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">% Atingimento</span>
           <span id="kpiPctBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">0,0%</span>
         </div>
-        <p id="kpiPct" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">0,00%</p>
+        <p id="kpiPct" class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-2 tabular-nums">0,0%</p>
         <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden mt-2">
           <div id="kpiPctBar" class="h-full bg-blue-600 rounded-full transition-all duration-300" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- KPI 4: Total Ficou Devendo (Gap Negativo) -->
       <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Ficou Devendo (Gap)</span>
-          <span id="kpiGapBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">Faltante</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Ficou Devendo (Gap)</span>
+          <span id="kpiGapBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700">Gap</span>
         </div>
         <p id="kpiGap" class="text-xl sm:text-2xl font-extrabold text-rose-600 mt-2 tabular-nums">R$ 0,00</p>
-        <p id="kpiGapSub" class="text-[11px] text-slate-500 mt-1">Soma do débito dos vendedores abaixo</p>
+        <p id="kpiGapSub" class="text-xs text-slate-500 mt-1">Diferença para a meta</p>
       </div>
 
-      <!-- KPI 5: Vendedores na Meta -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm sm:col-span-2 xl:col-span-1">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Vendedores na Meta</span>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Vendedores na Meta</span>
           <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -260,71 +282,63 @@
           </span>
         </div>
         <p id="kpiOnTarget" class="text-xl sm:text-2xl font-extrabold text-emerald-600 mt-2 tabular-nums">0 / 0</p>
-        <p id="kpiOnTargetSub" class="text-[11px] text-slate-500 mt-1">Atingiram &ge; 100% no filtro</p>
+        <p id="kpiOnTargetSub" class="text-xs text-slate-500 mt-1">0,0% da equipe batendo a meta</p>
       </div>
     </section>
 
-    <!-- ===================================================================== -->
-    <!-- ABA 2 (ABERTA POR PADRÃO): ACOMPANHAMENTO DRILL-DOWN & META           -->
-    <!-- ===================================================================== -->
+    <!-- ABA 1: ACOMPANHAMENTO DRILL-DOWN & META -->
     <div id="viewDrilldown" class="space-y-5">
-      <!-- Nível 1: Cards Clicáveis de Drill-Down por Filial / Praça -->
       <section>
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+        <div class="flex items-center justify-between mb-2.5">
           <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">
             Nível 1 — Drill-Down por Filial / Praça (Clique no card para filtrar a equipe)
           </h2>
-          <button id="btnResetBranchFilter" type="button" class="text-xs font-bold text-blue-600 hover:text-blue-800 hidden cursor-pointer">
+          <button id="btnResetBranchFilter" type="button" class="text-xs font-semibold text-blue-600 hover:text-blue-700 hidden cursor-pointer">
             × Limpar filtro de filial
           </button>
         </div>
-        <div id="branchCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3.5"></div>
+        <div id="branchCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5"></div>
       </section>
 
-      <!-- Filtros de Data de Referência, Situação e Busca -->
       <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-end justify-between gap-4">
         <div class="flex flex-wrap items-end gap-3">
           <div>
             <label for="ddDateSelect" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Data de Referência</label>
             <select id="ddDateSelect" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="ACCUMULATED">Acumulado (Dias Preenchidos)</option>
+              <option value="ACCUMULATED">Acumulado (Dias preenchidos)</option>
             </select>
           </div>
-
           <div>
             <label for="ddStatusFilter" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Situação da Meta</label>
             <select id="ddStatusFilter" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="ALL">Todos os Vendedores</option>
-              <option value="DEVENDO">Ficaram Devendo (&lt; 100%)</option>
+              <option value="DEVENDO">Abaixo da Meta / Ficou Devendo</option>
               <option value="BATIDA">Bateram a Meta (&ge; 100%)</option>
             </select>
           </div>
-
           <div>
             <label for="ddSearchInput" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Buscar Vendedor</label>
             <input id="ddSearchInput" type="text" placeholder="Ex.: ADEMAR, POA, GYN..." class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm text-slate-800 w-56 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
         </div>
-
         <div id="ddSummaryPill" class="text-xs font-semibold text-slate-600 bg-slate-100 px-3.5 py-2 rounded-xl">
-          Carregando vendedores...
+          Carregando...
         </div>
       </section>
 
-      <!-- Nível 2: Tabela Ranking de Vendedores -->
       <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-xs sm:text-sm tabular-nums">
             <thead class="bg-slate-900 text-white text-left">
               <tr>
-                <th class="px-4 py-3 font-bold cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="branchDisplay">Filial / Praça ↕</th>
-                <th class="px-4 py-3 font-bold cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="name">Vendedor ↕</th>
-                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="dailyMeta">Meta Diária ↕</th>
-                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="metaEsperada">Meta do Período ↕</th>
-                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="realizado">Realizado ↕</th>
-                <th class="px-4 py-3 font-bold text-center cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="pct">% Atingimento ↕</th>
-                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800 whitespace-nowrap" data-sort="devendo">Ficou Devendo / Saldo ↕</th>
-                <th class="px-4 py-3 font-bold text-center whitespace-nowrap">Extrato</th>
+                <th class="px-4 py-3 font-bold cursor-pointer hover:bg-slate-800" data-sort="branchDisplay">Filial / Praça ↕</th>
+                <th class="px-4 py-3 font-bold cursor-pointer hover:bg-slate-800" data-sort="name">Vendedor ↕</th>
+                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800" data-sort="dailyMeta">Meta Diária ↕</th>
+                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800" data-sort="metaEsperada">Meta Esperada ↕</th>
+                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800" data-sort="realizado">Realizado ↕</th>
+                <th class="px-4 py-3 font-bold text-center cursor-pointer hover:bg-slate-800" data-sort="pct">% Atingimento ↕</th>
+                <th class="px-4 py-3 font-bold text-right cursor-pointer hover:bg-slate-800" data-sort="devendo">Ficou Devendo / Saldo ↕</th>
+                <th class="px-4 py-3 font-bold text-center">Detalhe</th>
               </tr>
             </thead>
             <tbody id="ddRankingBody" class="divide-y divide-slate-200"></tbody>
@@ -334,9 +348,7 @@
       </section>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- ABA 1: VISÃO GERAL DIÁRIA (MATRIZ ESTILO PLANILHA)                    -->
-    <!-- ===================================================================== -->
+    <!-- ABA 2: VISÃO GERAL DIÁRIA (MATRIZ) -->
     <div id="viewMatrix" class="hidden space-y-4">
       <section class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div class="flex flex-wrap items-center gap-3">
@@ -346,34 +358,28 @@
               <option value="ALL">Todas as Filiais da Região</option>
             </select>
           </div>
-
           <div>
             <label for="matrixSearchInput" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Buscar Vendedor</label>
-            <input id="matrixSearchInput" type="text" placeholder="Nome do vendedor..." class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm text-slate-800 w-52 sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input id="matrixSearchInput" type="text" placeholder="Nome ou cidade..." class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm text-slate-800 w-52 sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
-
           <div>
-            <label for="matrixDisplayMode" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Exibir nas Células Diárias</label>
+            <label for="matrixDisplayMode" class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Exibir nas Células</label>
             <select id="matrixDisplayMode" class="px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="value">Valor (R$)</option>
-              <option value="pct">% da Meta</option>
-              <option value="gap">Saldo / Devendo (R$)</option>
+              <option value="value">Valor Realizado (R$)</option>
+              <option value="pct">% da Meta Diária</option>
+              <option value="gap">Saldo / Ficou Devendo (R$)</option>
             </select>
           </div>
         </div>
-
         <div class="flex flex-wrap items-center gap-3 text-xs">
           <span class="inline-flex items-center gap-1.5 font-medium text-slate-700">
-            <span class="w-4 h-4 rounded border border-emerald-500 bg-[#86efac]"></span>
-            Meta Batida (&ge; 100%)
+            <span class="w-4 h-4 rounded border border-emerald-500 bg-[#86efac]"></span> Bateu a Meta
           </span>
           <span class="inline-flex items-center gap-1.5 font-medium text-slate-700">
-            <span class="w-4 h-4 rounded border border-rose-400 bg-[#fca5a5]"></span>
-            Abaixo da Meta (&lt; 100%)
+            <span class="w-4 h-4 rounded border border-rose-400 bg-[#fca5a5]"></span> Abaixo da Meta
           </span>
           <span class="inline-flex items-center gap-1.5 font-medium text-slate-500">
-            <span class="w-4 h-4 rounded border border-slate-300 bg-slate-100"></span>
-            Dia Futuro / Em Branco
+            <span class="w-4 h-4 rounded border border-slate-300 bg-slate-100"></span> Dia Futuro
           </span>
         </div>
       </section>
@@ -387,7 +393,7 @@
           </table>
         </div>
         <div class="px-4 py-2.5 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500 flex flex-wrap items-center justify-between gap-2">
-          <span>Clique em qualquer vendedor para abrir o gráfico de evolução diária e o extrato completo.</span>
+          <span>Clique em qualquer vendedor para abrir o gráfico individual e extrato dia a dia.</span>
           <span id="matrixRowCount">0 vendedores exibidos</span>
         </div>
       </section>
@@ -395,7 +401,7 @@
   </main>
 
   <!-- ======================================================================= -->
-  <!-- MODAL 1: DRILL-DOWN INDIVIDUAL DO VENDEDOR + GRÁFICO CHART.JS           -->
+  <!-- MODAL 1: DETALHE INDIVIDUAL DO VENDEDOR                                 -->
   <!-- ======================================================================= -->
   <div id="sellerModal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden">
@@ -403,7 +409,7 @@
         <div>
           <div class="flex items-center gap-2 mb-1">
             <span id="modalSellerBranch" class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-600 text-white">Filial</span>
-            <span id="modalSellerRegion" class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-700 text-slate-200">Região</span>
+            <span id="modalSellerRegion" class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300">Região</span>
           </div>
           <h3 id="modalSellerName" class="text-lg sm:text-xl font-extrabold">VENDEDOR</h3>
         </div>
@@ -413,7 +419,6 @@
           </svg>
         </button>
       </div>
-
       <div class="p-5 overflow-y-auto space-y-5">
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 tabular-nums">
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
@@ -421,7 +426,7 @@
             <p id="modalMetaDiaria" class="text-base font-extrabold text-slate-900 mt-0.5">R$ 0,00</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <p class="text-[11px] font-bold uppercase text-slate-400">Realizado Acum.</p>
+            <p class="text-[11px] font-bold uppercase text-slate-400">Total Vendido</p>
             <p id="modalTotalVendido" class="text-base font-extrabold text-blue-600 mt-0.5">R$ 0,00</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
@@ -429,7 +434,7 @@
             <p id="modalPctGeral" class="text-base font-extrabold text-slate-900 mt-0.5">0,0%</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <p class="text-[11px] font-bold uppercase text-slate-400">Dias na Meta</p>
+            <p class="text-[11px] font-bold uppercase text-slate-400">Dias Batidos</p>
             <p id="modalDiasBatidos" class="text-base font-extrabold text-emerald-600 mt-0.5">0 / 0</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 col-span-2 sm:col-span-1">
@@ -437,14 +442,12 @@
             <p id="modalSaldoFinal" class="text-base font-extrabold text-rose-600 mt-0.5">R$ 0,00</p>
           </div>
         </div>
-
         <div class="p-4 rounded-2xl border border-slate-200 bg-white">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Evolução Diária vs. Linha de Meta Diária</h4>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Evolução Diária vs. Meta Diária</h4>
           <div class="h-60 w-full">
             <canvas id="sellerChartCanvas"></canvas>
           </div>
         </div>
-
         <div>
           <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Extrato Detalhado Dia a Dia</h4>
           <div class="overflow-x-auto rounded-xl border border-slate-200">
@@ -468,59 +471,57 @@
   </div>
 
   <!-- ======================================================================= -->
-  <!-- MODAL 2: COPIADOR RÁPIDO DE LINKS REGIONAIS                             -->
+  <!-- MODAL 2: LINKS DIRETOS POR MACRO-REGIÃO (APENAS MODO GESTOR GERAL)      -->
   <!-- ======================================================================= -->
   <div id="linksModal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-xl w-full overflow-hidden">
       <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
-        <h3 class="text-base font-bold">Links Diretos por Macro-Região</h3>
-        <button id="btnCloseLinksModal" type="button" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">
+        <h3 class="text-base font-extrabold">Links Diretos por Macro-Região</h3>
+        <button id="btnCloseLinksModal" type="button" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
       <div class="p-5 space-y-4 text-xs sm:text-sm">
-        <p class="text-slate-600 text-xs">
-          Envie cada link abaixo para sua respectiva equipe. Ao abrir o link com <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-800">?regiao=...</code>, o painel trava automaticamente apenas nas filiais daquela região.
+        <p class="text-slate-600">
+          Compartilhe cada link abaixo com sua respectiva equipe. Os painéis regionais ocultam automaticamente os links de outras regiões e bloqueiam o acesso geral.
         </p>
 
-        <!-- Link Sul -->
-        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-900">1. Link Região Sul (Londrina, Curitiba, Joinville e Porto Alegre)</span>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">LDA • CTB • JOI • POA</span>
+            <span class="font-bold text-slate-900">1. Região Sul (Londrina, Curitiba, Joinville e Porto Alegre)</span>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">LDA • CTB • JOI • POA</span>
           </div>
           <div class="flex items-center gap-2">
             <input id="inputLinkSul" type="text" readonly class="flex-1 px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-mono text-slate-700" />
-            <button type="button" onclick="copyRegionalUrl('inputLinkSul', this)" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold cursor-pointer">
+            <button type="button" onclick="copyRegionalUrl('inputLinkSul', this)" class="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition cursor-pointer">
               Copiar
             </button>
           </div>
         </div>
 
-        <!-- Link Norte / Nordeste / Goiânia -->
-        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-900">2. Link Norte / Nordeste / Goiânia</span>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">Demais Praças</span>
+            <span class="font-bold text-slate-900">2. Região Norte / Nordeste / Goiânia</span>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">Demais Praças</span>
           </div>
           <div class="flex items-center gap-2">
             <input id="inputLinkNorte" type="text" readonly class="flex-1 px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-mono text-slate-700" />
-            <button type="button" onclick="copyRegionalUrl('inputLinkNorte', this)" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold cursor-pointer">
+            <button type="button" onclick="copyRegionalUrl('inputLinkNorte', this)" class="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition cursor-pointer">
               Copiar
             </button>
           </div>
         </div>
 
-        <!-- Link Gestor Geral -->
-        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-900">3. Link Gestor Geral (Acesso Completo a Todas as Regiões)</span>
+            <span class="font-bold text-slate-900">3. Acesso Gestor Geral (Protegido por Senha)</span>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-800">Senha: gestor2026</span>
           </div>
           <div class="flex items-center gap-2">
             <input id="inputLinkGeral" type="text" readonly class="flex-1 px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-mono text-slate-700" />
-            <button type="button" onclick="copyRegionalUrl('inputLinkGeral', this)" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold cursor-pointer">
+            <button type="button" onclick="copyRegionalUrl('inputLinkGeral', this)" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition cursor-pointer">
               Copiar
             </button>
           </div>
@@ -530,13 +531,13 @@
   </div>
 
   <!-- ======================================================================= -->
-  <!-- MODAL 3: CONFIGURAÇÃO DA PLANILHA GOOGLE SHEETS                         -->
+  <!-- MODAL 3: CONFIGURAÇÃO DA PLANILHA (APENAS MODO GESTOR GERAL)            -->
   <!-- ======================================================================= -->
   <div id="configModal" class="fixed inset-0 z-50 hidden bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-2xl w-full overflow-hidden">
       <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
-        <h3 class="text-base font-bold">Fonte de Dados — Google Sheets CSV</h3>
-        <button id="btnCloseConfigModal" type="button" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer">
+        <h3 class="text-base font-extrabold">Configuração da Planilha Google Sheets</h3>
+        <button id="btnCloseConfigModal" type="button" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -544,16 +545,13 @@
       </div>
       <div class="p-5 space-y-4 text-xs sm:text-sm">
         <div>
-          <label for="inputSheetUrl" class="block font-bold text-slate-700 mb-1">URL CSV Publicada do Google Sheets</label>
+          <label for="inputSheetUrl" class="block font-bold text-slate-700 mb-1">Link CSV Publicado do Google Sheets</label>
           <input id="inputSheetUrl" type="url" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <p class="text-[11px] text-slate-500 mt-1">Sincronização automática a cada 60 segundos com detecção dinâmica de todas as datas até 30-nov.</p>
         </div>
-
         <div>
-          <label for="textareaPasteCsv" class="block font-bold text-slate-700 mb-1">Ou cole os dados diretamente da planilha (Modo Contingência)</label>
-          <textarea id="textareaPasteCsv" rows="4" placeholder="Copie a tabela da planilha (Filial, Vendedor, META INICIAL e os dias) e cole aqui..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          <label for="textareaPasteCsv" class="block font-bold text-slate-700 mb-1">Ou cole os dados diretamente (Contingência Offline)</label>
+          <textarea id="textareaPasteCsv" rows="4" placeholder="Cole aqui as linhas da planilha..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         </div>
-
         <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200">
           <button id="btnRestoreDefaultUrl" type="button" class="px-3 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer">
             Restaurar Link Padrão
@@ -576,7 +574,7 @@
   <!-- ======================================================================= -->
   <script>
     // =========================================================================
-    // 1. CONSTANTES E DADOS DE FALLBACK (INCLUINDO SUL [LDA, CTB, JOI, POA] E NORTE/NE/GOIÂNIA)
+    // 1. CONFIGURAÇÃO DA PLANILHA GOOGLE SHEETS E MAPA DE CIDADES
     // =========================================================================
     const DEFAULT_GOOGLE_SHEET_CSV_URL =
       'https://docs.google.com/spreadsheets/d/e/2PACX-1vRlAaDAfnrWa0BvSWmc1HpdLI8VCxH0CDc8hyBGCkLyc3U-7HbD7YI4NNKUM1WlIA/pub?gid=283113571&single=true&output=csv';
@@ -587,9 +585,9 @@
       JOI: 'Joinville (SC)',
       POA: 'Porto Alegre (RS)',
       GYN: 'Goiânia (GO)',
-      BSB: 'Brasília (DF)',
-      SLZ: 'São Luís (MA)',
+      MAO: 'Manaus (AM)',
       BEL: 'Belém (PA)',
+      SLZ: 'São Luís (MA)',
       FOR: 'Fortaleza (CE)',
       REC: 'Recife (PE)',
       SSA: 'Salvador (BA)'
@@ -598,25 +596,16 @@
     const FALLBACK_SHEET_TSV = `;;1ª SEMANA;1ª SEMANA;1ª SEMANA;1ª SEMANA;;2ª SEMANA;2ª SEMANA;2ª SEMANA;2ª SEMANA;2ª SEMANA;;3ª SEMANA;3ª SEMANA;3ª SEMANA;3ª SEMANA;3ª SEMANA;;4ª SEMANA;4ª SEMANA;4ª SEMANA;4ª SEMANA;4ª SEMANA;;5ª SEMANA
 Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.;12-nov.;13-nov.;;16-nov.;17-nov.;18-nov.;19-nov.;20-nov.;;23-nov.;24-nov.;25-nov.;26-nov.;27-nov.;;30-nov.
 1;ADEMAR REP-LDA;25.537;R$ 15.907,28;R$ 10.271,02;R$ 25.518,53;R$ 12.797,74;;R$ 37.229,93;R$ 10.795,55;R$ 34.280,00;;;;;;;;;;;;;;;
-1;ALINE-LDA;20.094;R$ 30.711,82;R$ 24.487,43;R$ 20.929,85;R$ 25.346,54;;R$ 17.856,14;R$ 24.531,10;R$ 20.787,50;;;;;;;;;;;;;;;
-1;BRUNO-LDA;25.000;R$ 43.676,95;R$ 14.090,29;R$ 18.857,07;R$ 24.397,56;;R$ 22.115,74;R$ 24.944,46;R$ 21.913,62;;;;;;;;;;;;;;;
-1;PEDRO-LDA;26.500;R$ 32.968,46;R$ 28.769,36;R$ 31.074,96;R$ 23.257,44;;R$ 28.780,28;R$ 35.586,47;R$ 29.260,79;;;;;;;;;;;;;;;
-2;CARDOSO-CTB;20.526;R$ 25.383,30;R$ 18.010,98;R$ 17.082,30;R$ 13.779,69;;R$ 12.962,35;R$ 21.320,59;R$ 20.322,49;;;;;;;;;;;;;;;
-2;ELINEU-CTB;22.895;R$ 18.552,34;R$ 31.909,99;R$ 23.738,71;R$ 27.942,33;;R$ 36.050,81;R$ 25.427,90;R$ 18.295,90;;;;;;;;;;;;;;;
-2;EVANDRO-CTB;19.737;R$ 11.042,96;R$ 15.810,41;R$ 15.481,32;R$ 14.518,33;;R$ 38.797,58;R$ 35.185,44;R$ 24.589,96;;;;;;;;;;;;;;;
+2;ALMENDRO-CTB;12.895;R$ 12.780,82;R$ 10.000,73;R$ 12.497,43;R$ 21.227,89;;R$ 10.551,60;R$ 14.070,83;R$ 10.256,20;;;;;;;;;;;;;;;
 4;CARLOS-JOI;17.421;R$ 10.027,17;R$ 19.441,89;R$ 15.863,83;R$ 15.153,23;;R$ 11.795,54;R$ 31.032,09;R$ 15.478,14;;;;;;;;;;;;;;;
-4;EDUARDO-JOI;20.000;R$ 19.508,77;R$ 16.430,00;R$ 17.001,10;R$ 20.773,06;;R$ 16.259,64;R$ 18.427,94;R$ 17.433,38;;;;;;;;;;;;;;;
-4;HELIO-JOI;32.000;R$ 19.148,24;R$ 30.853,54;R$ 35.619,82;R$ 23.317,95;;R$ 39.353,33;R$ 27.954,81;R$ 37.469,05;;;;;;;;;;;;;;;
-5;MARCELO-POA;22.400;R$ 24.120,50;R$ 19.850,00;R$ 23.410,80;R$ 26.190,40;;R$ 21.300,00;R$ 25.890,15;R$ 24.670,90;;;;;;;;;;;;;;;
-5;FERNANDA-POA;18.900;R$ 17.450,20;R$ 21.340,60;R$ 16.980,45;R$ 19.540,00;;R$ 22.810,30;R$ 18.120,75;R$ 20.490,80;;;;;;;;;;;;;;;
-6;RODRIGO-GYN;24.500;R$ 26.840,10;R$ 21.190,40;R$ 25.920,00;R$ 22.450,80;;R$ 28.110,45;R$ 23.780,60;R$ 27.340,20;;;;;;;;;;;;;;;
-6;PATRICIA-GYN;19.200;R$ 18.120,00;R$ 20.450,90;R$ 19.870,30;R$ 16.540,20;;R$ 21.980,40;R$ 18.650,15;R$ 22.110,50;;;;;;;;;;;;;;;
-7;ANDERSON-SLZ;17.800;R$ 19.230,40;R$ 15.890,20;R$ 18.450,60;R$ 16.920,00;;R$ 20.140,80;R$ 17.320,50;R$ 19.890,10;;;;;;;;;;;;;;;
-8;RICARDO-BEL;21.000;R$ 22.450,00;R$ 18.760,30;R$ 20.110,90;R$ 23.890,40;;R$ 19.540,20;R$ 24.120,70;R$ 21.680,35;;;;;;;;;;;;;;;`;
+5;MARCELO-POA;18.500;R$ 19.120,00;R$ 17.850,40;R$ 21.400,10;R$ 16.900,00;;R$ 22.310,50;R$ 18.920,00;R$ 20.150,80;;;;;;;;;;;;;;;
+6;RODRIGO-GYN;21.000;R$ 22.450,00;R$ 18.900,00;R$ 24.100,50;R$ 19.800,00;;R$ 25.300,00;R$ 21.450,00;R$ 23.100,00;;;;;;;;;;;;;;;`;
 
     // =========================================================================
-    // 2. DETECÇÃO DO PARÂMETRO DE REGIÃO NA URL (?regiao=sul | ?regiao=norte)
+    // 2. DETECÇÃO DO PARÂMETRO DE REGIÃO NA URL E CONTROLE DE ACESSO GESTOR
     // =========================================================================
+    const MANAGER_PASSWORD = 'gestor2026';
+
     function getLockedRegionFromUrl() {
       const params = new URLSearchParams(window.location.search);
       const raw = (params.get('regiao') || '').trim().toLowerCase();
@@ -626,6 +615,10 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     }
 
     const LOCKED_REGION = getLockedRegionFromUrl();
+
+    function isManagerAuthenticated() {
+      return sessionStorage.getItem('painel_gestor_auth') === 'true';
+    }
 
     // =========================================================================
     // 3. ESTADO GLOBAL DA APLICAÇÃO
@@ -676,13 +669,19 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
 
     /**
      * Classifica automaticamente cada vendedor/filial entre:
-     * - 'SUL': -LDA (Londrina), -CTB (Curitiba), -JOI (Joinville), -POA (Porto Alegre) ou menção explícita a Sul/POA/RS/PR/SC
+     * - 'SUL': -LDA (Londrina), -CTB (Curitiba), -JOI (Joinville), -POA (Porto Alegre) ou Filiais 1, 2, 4
      * - 'NORTE': Demais filiais (Goiânia, Norte e Nordeste)
      */
     function classifyMacroRegion(sellerName, branchRaw) {
       const upperName = String(sellerName || '').toUpperCase().trim();
       const upperBranch = String(branchRaw || '').toUpperCase().trim();
       const combined = `${upperName} ${upperBranch}`;
+
+      // Verifica filiais numéricas conhecidas da Região Sul (1=LDA, 2=CTB, 4=JOI)
+      const branchNum = upperBranch.replace(/\D/g, '');
+      if (branchNum === '1' || branchNum === '2' || branchNum === '4') {
+        return 'SUL';
+      }
 
       // Verifica siglas de cidades do Sul no nome do vendedor (ex: ADEMAR REP-LDA, MARCELO-POA)
       const sulTokens = ['LDA', 'CTB', 'JOI', 'POA'];
@@ -1073,17 +1072,39 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     function applyRegionalUIState() {
       const badge = document.getElementById('regionLockBadge');
       const switcherWrapper = document.getElementById('regionSwitcherWrapper');
+      const btnCopyLinks = document.getElementById('btnCopyLinks');
+      const btnOpenConfig = document.getElementById('btnOpenConfig');
+      const authOverlay = document.getElementById('managerAuthOverlay');
 
       if (state.lockedRegion === 'SUL') {
-        badge.textContent = 'Região Sul • Londrina, Curitiba, Joinville e Porto Alegre (POA)';
+        badge.textContent = 'Região Sul';
         badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30';
         switcherWrapper.classList.add('hidden');
+        btnCopyLinks.classList.add('hidden');
+        btnOpenConfig.classList.add('hidden');
+        authOverlay.classList.add('hidden');
       } else if (state.lockedRegion === 'NORTE') {
         badge.textContent = 'Região Norte / Nordeste / Goiânia';
         badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30';
         switcherWrapper.classList.add('hidden');
+        btnCopyLinks.classList.add('hidden');
+        btnOpenConfig.classList.add('hidden');
+        authOverlay.classList.add('hidden');
       } else {
+        // Acesso Raiz (Gestor Geral) — exige autenticação por senha
+        if (!isManagerAuthenticated()) {
+          authOverlay.classList.remove('hidden');
+          switcherWrapper.classList.add('hidden');
+          btnCopyLinks.classList.add('hidden');
+          btnOpenConfig.classList.add('hidden');
+          return;
+        }
+
+        authOverlay.classList.add('hidden');
         switcherWrapper.classList.remove('hidden');
+        btnCopyLinks.classList.remove('hidden');
+        btnOpenConfig.classList.remove('hidden');
+
         if (state.selectedRegion === 'SUL') {
           badge.textContent = 'Filtro Ativo: Região Sul (LDA • CTB • JOI • POA)';
           badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30';
@@ -1800,6 +1821,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
     // 10. COPIADOR DE LINKS REGIONAIS E NAVEGAÇÃO
     // =========================================================================
     function openLinksModal() {
+      if (state.lockedRegion || !isManagerAuthenticated()) return;
       const baseUrl = window.location.href.split('?')[0].split('#')[0];
       document.getElementById('inputLinkSul').value = `${baseUrl}?regiao=sul`;
       document.getElementById('inputLinkNorte').value = `${baseUrl}?regiao=norte`;
@@ -1862,6 +1884,23 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       document.getElementById('tabBtnDrilldown').addEventListener('click', () => switchTab('drilldown'));
       document.getElementById('tabBtnMatrix').addEventListener('click', () => switchTab('matrix'));
 
+      // Autenticação Gestor Geral na URL raiz
+      const loginForm = document.getElementById('managerLoginForm');
+      if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const pwd = document.getElementById('managerPasswordInput').value;
+          const errEl = document.getElementById('managerAuthError');
+          if (pwd === MANAGER_PASSWORD) {
+            sessionStorage.setItem('painel_gestor_auth', 'true');
+            errEl.classList.add('hidden');
+            renderAll();
+          } else {
+            errEl.classList.remove('hidden');
+          }
+        });
+      }
+
       // Botões de troca de região (modo Gestor Geral)
       document.querySelectorAll('.region-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1874,26 +1913,26 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
         });
       });
 
-      document.getElementById('btnSyncNow').addEventListener('click', () => loadSpreadsheetData(true));
-      document.getElementById('btnCopyLinks').addEventListener('click', openLinksModal);
-      document.getElementById('btnCloseLinksModal').addEventListener('click', () => {
-        document.getElementById('linksModal').classList.add('hidden');
+      document.getElementById('btnSyncNow')?.addEventListener('click', () => loadSpreadsheetData(true));
+      document.getElementById('btnCopyLinks')?.addEventListener('click', openLinksModal);
+      document.getElementById('btnCloseLinksModal')?.addEventListener('click', () => {
+        document.getElementById('linksModal')?.classList.add('hidden');
       });
 
       // Filtros Drill-Down
-      document.getElementById('btnResetBranchFilter').addEventListener('click', () => {
+      document.getElementById('btnResetBranchFilter')?.addEventListener('click', () => {
         state.ddBranch = 'ALL';
         renderAll();
       });
-      document.getElementById('ddDateSelect').addEventListener('change', (e) => {
+      document.getElementById('ddDateSelect')?.addEventListener('change', (e) => {
         state.ddDate = e.target.value;
         renderAll();
       });
-      document.getElementById('ddStatusFilter').addEventListener('change', (e) => {
+      document.getElementById('ddStatusFilter')?.addEventListener('change', (e) => {
         state.ddStatus = e.target.value;
         renderDrilldownTab();
       });
-      document.getElementById('ddSearchInput').addEventListener('input', (e) => {
+      document.getElementById('ddSearchInput')?.addEventListener('input', (e) => {
         state.ddSearch = e.target.value;
         renderDrilldownTab();
       });
@@ -1912,48 +1951,50 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
       });
 
       // Filtros Matriz
-      document.getElementById('matrixBranchFilter').addEventListener('change', (e) => {
+      document.getElementById('matrixBranchFilter')?.addEventListener('change', (e) => {
         state.matrixBranch = e.target.value;
         renderAll();
       });
-      document.getElementById('matrixSearchInput').addEventListener('input', (e) => {
+      document.getElementById('matrixSearchInput')?.addEventListener('input', (e) => {
         state.matrixSearch = e.target.value;
         renderMatrixTab();
       });
-      document.getElementById('matrixDisplayMode').addEventListener('change', (e) => {
+      document.getElementById('matrixDisplayMode')?.addEventListener('change', (e) => {
         state.matrixMode = e.target.value;
         renderMatrixTab();
       });
 
       // Modais
-      document.getElementById('btnCloseSellerModal').addEventListener('click', () => {
-        document.getElementById('sellerModal').classList.add('hidden');
+      document.getElementById('btnCloseSellerModal')?.addEventListener('click', () => {
+        document.getElementById('sellerModal')?.classList.add('hidden');
       });
-      document.getElementById('sellerModal').addEventListener('click', (e) => {
-        if (e.target.id === 'sellerModal') document.getElementById('sellerModal').classList.add('hidden');
+      document.getElementById('sellerModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'sellerModal') document.getElementById('sellerModal')?.classList.add('hidden');
       });
 
-      document.getElementById('btnOpenConfig').addEventListener('click', () => {
-        document.getElementById('inputSheetUrl').value = state.sheetUrl;
-        document.getElementById('configModal').classList.remove('hidden');
+      document.getElementById('btnOpenConfig')?.addEventListener('click', () => {
+        const inputUrl = document.getElementById('inputSheetUrl');
+        if (inputUrl) inputUrl.value = state.sheetUrl;
+        document.getElementById('configModal')?.classList.remove('hidden');
       });
-      document.getElementById('btnCloseConfigModal').addEventListener('click', () => {
-        document.getElementById('configModal').classList.add('hidden');
+      document.getElementById('btnCloseConfigModal')?.addEventListener('click', () => {
+        document.getElementById('configModal')?.classList.add('hidden');
       });
-      document.getElementById('btnRestoreDefaultUrl').addEventListener('click', () => {
-        document.getElementById('inputSheetUrl').value = DEFAULT_GOOGLE_SHEET_CSV_URL;
+      document.getElementById('btnRestoreDefaultUrl')?.addEventListener('click', () => {
+        const inputUrl = document.getElementById('inputSheetUrl');
+        if (inputUrl) inputUrl.value = DEFAULT_GOOGLE_SHEET_CSV_URL;
       });
-      document.getElementById('btnSaveAndSyncUrl').addEventListener('click', () => {
-        const newUrl = document.getElementById('inputSheetUrl').value.trim();
+      document.getElementById('btnSaveAndSyncUrl')?.addEventListener('click', () => {
+        const newUrl = (document.getElementById('inputSheetUrl')?.value || '').trim();
         if (newUrl) {
           state.sheetUrl = newUrl;
           localStorage.setItem('painel_vendedores_csv_url', newUrl);
-          document.getElementById('configModal').classList.add('hidden');
+          document.getElementById('configModal')?.classList.add('hidden');
           loadSpreadsheetData(true);
         }
       });
-      document.getElementById('btnApplyPastedData').addEventListener('click', () => {
-        const rawPasted = document.getElementById('textareaPasteCsv').value.trim();
+      document.getElementById('btnApplyPastedData')?.addEventListener('click', () => {
+        const rawPasted = (document.getElementById('textareaPasteCsv')?.value || '').trim();
         if (!rawPasted) return;
         try {
           const parsed = parseSalesMatrix(rawPasted);
@@ -1962,7 +2003,7 @@ Filial;Vendedor;META INICIAL;3-nov.;4-nov.;5-nov.;6-nov.;;9-nov.;10-nov.;11-nov.
           populateSelectOptions();
           renderAll();
           updateSyncBadge('ok', 'Dados colados carregados');
-          document.getElementById('configModal').classList.add('hidden');
+          document.getElementById('configModal')?.classList.add('hidden');
         } catch (err) {
           updateSyncBadge('offline', 'Erro ao ler dados: ' + err.message);
         }
